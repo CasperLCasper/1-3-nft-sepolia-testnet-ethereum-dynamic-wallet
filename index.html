@@ -10,8 +10,6 @@
   <style>
     body { font-family:'Inter',Arial,sans-serif; background:#000; color:#fff; margin:0; padding:20px; position: relative; }
     .container { max-width:1400px; margin:auto; display:flex; flex-direction:column; align-items:center; gap:12px; }
-    h1 { font-size:24px; margin:0; line-height:1; background:linear-gradient(90deg,#ffffff,#aaaaaa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    .subtitle { margin-top:4px; color:#9fb0c3; font-size:18px; }
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
     button:disabled { background:#444; cursor:not-allowed; box-shadow:0 6px 18px rgba(0,0,0,0.2); }
@@ -85,40 +83,68 @@
     #tokenListContainer::-webkit-scrollbar-thumb { background:#0ff; border-radius:3px; }
     #tokenListContainer::-webkit-scrollbar-track { background:#222; border-radius:3px; }
 
-    /* JAUNA, PAREIZA CSS STRUKTŪRA */
+    /* ===== HEADER CORE ===== */
     .site-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;              /* 🔥 FIX: neļauj layout lūzt */
       gap: 20px;
       width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
+    /* ===== LEFT SIDE ===== */
     .header-left {
       display: flex;
       align-items: center;
       gap: 20px;
+      min-width: 0;                  /* 🔥 Firefox fix */
+      flex: 1;                       /* 🔥 notur struktūru */
     }
 
+    /* ===== LOGO FIX ===== */
     .logo {
       width: 180px;
       height: auto;
+      display: block;                /* 🔥 novērš crop */
+      object-fit: contain;
+      max-width: 100%;
       flex-shrink: 0;
+    }
+
+    /* ===== TEXT ===== */
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
     .header-text h1 {
       margin: 0;
+      font-size: 24px;
+      background: linear-gradient(90deg,#ffffff,#aaaaaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .header-text .subtitle {
       margin: 0;
+      color: #9fb0c3;
+      font-size: 16px;
     }
 
+    /* ===== ACTION BUTTONS ===== */
     .horizon-actions {
+      display: none;                 /* 🔥 PAGAIDĀM SLĒPJAM */
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Kad vajadzēs ieslēgt */
+    .horizon-actions.active {
       display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
     }
 
     .horizon-btn {
@@ -130,7 +156,7 @@
       color: #000;
       text-decoration: none;
       white-space: nowrap;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: 0.2s ease;
     }
 
     .horizon-btn:hover {
@@ -138,20 +164,24 @@
       transform: translateY(-2px);
     }
 
-    /* BONUS — Mobile fix */
+    /* Responsive */
     @media (max-width: 768px) {
       .site-header {
         flex-direction: column;
         align-items: flex-start;
       }
-
-      .horizon-actions {
+      .horizon-actions.active {
         width: 100%;
         justify-content: flex-start;
       }
-      
       .logo {
         width: 140px;
+      }
+      .header-text h1 {
+        font-size: 20px;
+      }
+      .header-text .subtitle {
+        font-size: 14px;
       }
     }
     
@@ -177,7 +207,7 @@
 
 <body>
   <div class="container" role="main">
-    <!-- PAREIZA HTML STRUKTŪRA -->
+    <!-- TĪRS HTML (salabots header) -->
     <header class="site-header">
       <div class="header-left">
         <img 
@@ -192,13 +222,10 @@
         </div>
       </div>
 
-      <div class="horizon-actions">
-        <a href="ACCESS_NFT_LINK" target="_blank" class="horizon-btn">
-          Access NFT
-        </a>
-        <a href="https://vercel.com/casperlcaspers-projects/virsburts" target="_blank" class="horizon-btn">
-          Genesis NFT
-        </a>
+      <!-- ACTIONS (droši kontrolējams bloks) -->
+      <div class="horizon-actions" id="nftActions">
+        <a href="#" target="_blank" class="horizon-btn">Access NFT</a>
+        <a href="#" target="_blank" class="horizon-btn">Genesis NFT</a>
       </div>
     </header>
 
@@ -223,8 +250,9 @@
       <div id="toggleInfoIcon" role="button" tabindex="0" aria-label="Toggle info">ℹ <span id="infoText">Info</span></div>
 
       <div id="tokenListContainer" aria-hidden="true">
-        <table>
-          <thead><tr><th>Address</th><th>Balance</th></tr></thead>
+        <tr>
+          <thead> hilab<th>Address</th><th>Balance</th> </tr>
+          </thead>
           <tbody id="tokenListContent"></tbody>
         </table>
       </div>
@@ -285,6 +313,19 @@
     const previewImage = document.getElementById('previewImage');
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
+
+    // ===== JAVASCRIPT KONTROLE (bez random parādīšanās) =====
+    function showNFTButtons(accessLink, genesisLink) {
+      const container = document.getElementById('nftActions');
+      const links = container.querySelectorAll('a');
+      links[0].href = accessLink;
+      links[1].href = genesisLink;
+      container.classList.add('active');
+    }
+
+    function hideNFTButtons() {
+      document.getElementById('nftActions').classList.remove('active');
+    }
 
     function showProgressSmooth() { 
       progressBarContainer.style.display = 'block'; 
