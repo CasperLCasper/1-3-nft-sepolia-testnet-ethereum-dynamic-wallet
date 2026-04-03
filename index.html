@@ -8,27 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ============================================ */
-    /* 1. RESET & BASE STYLES / PAMATA STILI        */
-    /* ============================================ */
     body { font-family:'Inter',Arial,sans-serif; background:#000; color:#fff; margin:0; padding:20px; position: relative; }
     .container { max-width:1400px; margin:auto; display:flex; flex-direction:column; align-items:center; gap:12px; }
-    
-    /* ============================================ */
-    /* 2. TYPOGRAPHY / TIPOGRAFIJA                  */
-    /* ============================================ */
     h1 { font-size:24px; margin:0; line-height:1; background:linear-gradient(90deg,#ffffff,#aaaaaa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; }
     .subtitle { margin-top:4px; color:#9fb0c3; font-size:18px; text-align:center; }
-    
-    /* ============================================ */
-    /* 3. BUTTON STYLES / POGU STILI                */
-    /* ============================================ */
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
     button:disabled { background:#444; cursor:not-allowed; box-shadow:0 6px 18px rgba(0,0,0,0.2); }
     button:hover:not(:disabled) { transform:translateY(-4px) scale(1.03); box-shadow:0 8px 22px rgba(0,0,0,0.65); }
     
-    /* 3.1. Loading state / Ielādes stāvoklis */
     button.loading {
       opacity: 0.7;
       cursor: wait;
@@ -52,48 +40,25 @@
       to { transform: rotate(360deg); }
     }
     
-    /* 3.2. Generate NFT button / Ģenerēt NFT poga */
     .generate-nft-btn { background:linear-gradient(90deg,#f7971e,#ffd200); color:#000; }
     .generate-nft-btn:hover:not(:disabled) { background:linear-gradient(90deg,#ffb347,#ffdd55); }
     .generate-nft-btn.loading::after { border-top-color: #000; }
     
-    /* ============================================ */
-    /* 4. CANVAS & SNAPSHOT / KANVA UN MOMENTUZŅĒMUMS */
-    /* ============================================ */
     .snapshot-container { width:100%; background:#000; border-radius:14px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.6); position:relative; }
     #snapshotCanvas { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.03); display:block; margin-bottom:12px; }
-    
-    /* ============================================ */
-    /* 5. RECORDING TIMER / IERAKSTA TAIMERIS       */
-    /* ============================================ */
     #recordTimer { margin-top:6px; color:#0ff; font-weight:600; font-size:16px; text-align:center; }
-    
-    /* ============================================ */
-    /* 6. STATUS & PROGRESS / STATUSS UN PROGRESS   */
-    /* ============================================ */
     #statusContainer { position: relative; width: 100%; height: 40px; margin-top: 8px; }
     .status { font-weight:600; font-size:16px; color:#fff; line-height:40px; text-align:center; }
     #progressBarContainer { position: absolute; top: 50%; left: 50%; width: 60%; height: 18px; background: rgba(255,255,255,0.1); border-radius: 6px; transform: translate(-50%, -50%); display: none; overflow: hidden; }
     #progressBar { height: 100%; width: 100%; background: linear-gradient(90deg,#0ff,#4a90e2); border-radius: 6px; transform: scaleX(0); transform-origin: left center; transition: transform 0.4s ease; }
-    
-    /* ============================================ */
-    /* 7. CONTROL BUTTONS ON CANVAS / VADĪBAS POGAS UZ KANVAS */
-    /* ============================================ */
     #fullscreenIcon { position:absolute; top:10px; right:10px; display:flex; align-items:center; cursor:pointer; color:#0ff; background:rgba(0,0,0,0.3); border-radius:6px; padding:6px 10px; transition: background 0.2s, transform 0.2s; z-index:10; user-select:none; }
     #fullscreenIcon:hover { background:rgba(0,255,255,0.2); transform: scale(1.05); }
     #fullscreenText { font-family:'Inter',Arial,sans-serif; white-space: nowrap; margin-left:6px; font-size:16px; font-weight:600; }
     #toggleInfoIcon { position:absolute; top:10px; left:10px; display:flex; align-items:center; cursor:pointer; color:#0ff; background:rgba(0,0,0,0.3); border-radius:6px; padding:6px 10px; transition: background 0.2s, transform 0.2s; z-index:10; user-select:none; }
     #toggleInfoIcon:hover { background:rgba(0,255,255,0.2); transform: scale(1.05); }
     #infoText { font-family:'Inter',Arial,sans-serif; white-space: nowrap; margin-left:6px; font-size:16px; font-weight:600; }
-    
-    /* ============================================ */
-    /* 8. ACCOUNT DISPLAY / KONTA INFORMĀCIJA       */
-    /* ============================================ */
     #accountDisplay { width:100%; word-break:break-word; margin-top:8px; font-size:16px; text-align:center; }
 
-    /* ============================================ */
-    /* 9. TOKEN LIST / TOKENU SARAKSTS              */
-    /* ============================================ */
     #tokenListContainer {
       display:none;
       position:absolute;
@@ -120,9 +85,6 @@
     #tokenListContainer::-webkit-scrollbar-thumb { background:#0ff; border-radius:3px; }
     #tokenListContainer::-webkit-scrollbar-track { background:#222; border-radius:3px; }
 
-    /* ============================================ */
-    /* 10. HEADER WITH LOGO / GALVENE AR LOGO       */
-    /* ============================================ */
     .site-header {
       position: relative;
       width: 100%;
@@ -142,9 +104,6 @@
       padding-top: 5px;
     }
     
-    /* ============================================ */
-    /* 11. RESPONSIVE DESIGN / RESPONSĪVS DIZAINS   */
-    /* ============================================ */
     @media (max-width: 768px) {
       .logo {
         position: static;
@@ -160,9 +119,6 @@
       }
     }
     
-    /* ============================================ */
-    /* 12. IPFS PREVIEW PANEL / IPFS PRIEKŠSKATĪJUMS */
-    /* ============================================ */
     .ipfs-preview {
       position: fixed;
       bottom: 20px;
@@ -184,16 +140,8 @@
 </head>
 
 <body>
-  <!-- ============================================ -->
-  <!-- 13. MAIN CONTAINER / GALVENAIS KONTEINERS    -->
-  <!-- ============================================ -->
   <div class="container" role="main">
-    
-    <!-- ============================================ -->
-    <!-- 14. HEADER SECTION / GALVENES SADAĻA         -->
-    <!-- ============================================ -->
     <header class="site-header">
-      <!-- 14.1. SVG LOGO / SVG LOGO -->
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="160"
@@ -220,16 +168,12 @@
           y="3.8351295" />
       </svg>
 
-      <!-- 14.2. HEADER TEXT / GALVENES TEKSTS -->
       <div class="header-text">
         <h1>Dynamic Wallet Visualizer</h1>
         <p class="subtitle">Watch your Ethereum assets come alive — Create NFT on IPFS</p>
       </div>
     </header>
 
-    <!-- ============================================ -->
-    <!-- 15. CONTROLS SECTION / VADĪBAS SADAĻA        -->
-    <!-- ============================================ -->
     <section class="controls" aria-label="Controls">
       <button id="connectBtn">Connect Wallet</button>
       <button id="renderBtn" disabled>Render Snapshot</button>
@@ -237,55 +181,28 @@
       <button id="generateNFTBtn" class="generate-nft-btn" disabled>Generate NFT</button>
     </section>
 
-    <!-- ============================================ -->
-    <!-- 16. ACCOUNT DISPLAY / KONTA INFORMĀCIJA      -->
-    <!-- ============================================ -->
     <div id="accountDisplay" aria-live="polite">Connected account: —</div>
-    
-    <!-- ============================================ -->
-    <!-- 17. STATUS CONTAINER / STATUSA KONTEINERS    -->
-    <!-- ============================================ -->
     <div id="statusContainer" aria-hidden="false">
       <div id="statusMsg" class="status" role="status" aria-live="polite"></div>
       <div id="progressBarContainer" aria-hidden="true"><div id="progressBar"></div></div>
     </div>
-    
-    <!-- ============================================ -->
-    <!-- 18. RECORDING TIMER / IERAKSTA TAIMERIS      -->
-    <!-- ============================================ -->
     <div id="recordTimer" aria-live="polite">Recording: 0 / 20 s</div>
 
-    <!-- ============================================ -->
-    <!-- 19. SNAPSHOT CONTAINER / MOMENTUZŅĒMUMA KONTEINERS -->
-    <!-- ============================================ -->
     <section class="snapshot-container" aria-label="Snapshot container">
-      <!-- 19.1. CANVAS ELEMENT / KANVAS ELEMENTS -->
       <canvas id="snapshotCanvas" width="1920" height="1080" aria-label="Visualization canvas"></canvas>
 
-      <!-- 19.2. FULLSCREEN BUTTON / PILNĒKRĀNA POGAS -->
       <div id="fullscreenIcon" role="button" tabindex="0" aria-label="Toggle fullscreen">⤢ <span id="fullscreenText">Fullscreen</span></div>
-      
-      <!-- 19.3. INFO BUTTON / INFORMĀCIJAS POGA -->
       <div id="toggleInfoIcon" role="button" tabindex="0" aria-label="Toggle info">ℹ <span id="infoText">Info</span></div>
 
-      <!-- 19.4. TOKEN LIST / TOKENU SARAKSTS -->
       <div id="tokenListContainer" aria-hidden="true">
         <table>
-          <thead>
-            <tr>
-              <th>Address</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Address</th><th>Balance</th></tr></thead>
           <tbody id="tokenListContent"></tbody>
         </table>
       </div>
     </section>
   </div>
 
-  <!-- ============================================ -->
-  <!-- 20. IPFS PREVIEW PANEL / IPFS PRIEKŠSKATĪJUMS -->
-  <!-- ============================================ -->
   <div id="ipfsPreview" class="ipfs-preview" style="display:none;">
     <strong>IPFS Links:</strong><br>
     <span id="previewImage"></span><br>
@@ -296,9 +213,6 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
-    // ============================================ //
-    // 21. CANVAS SETUP / KANVAS IESTATĪŠANA       //
-    // ============================================ //
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
     const ctx = canvas.getContext('2d');
@@ -313,23 +227,14 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr * scale, dpr * scale);
     }
-    
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // ============================================ //
-    // 22. VARIABLE DECLARATIONS / MAINĪGO DEKLARĀCIJA
-    // ============================================ //
     let provider, signer, account;
     let showInfo = true;
     let tokens = [], ethBalance = 0, txCount = 0, particles = [], initialParticles = [], animRequest = null;
-    let lastImageURL = null;
-    let lastVideoURL = null;
-    let lastMetadataURL = null;
+    let lastImageURL = null, lastVideoURL = null, lastMetadataURL = null;
 
-    // ============================================ //
-    // 23. DOM ELEMENT REFERENCES / DOM ELEMENTU ATSAUCES
-    // ============================================ //
     const connectBtn = document.getElementById('connectBtn');
     const renderBtn = document.getElementById('renderBtn');
     const recordBtn = document.getElementById('recordBtn');
@@ -348,14 +253,10 @@
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
 
-    // ============================================ //
-    // 24. HELPER FUNCTIONS / PALĪGFUNKCIJAS        //
-    // ============================================ //
     function showProgressSmooth() { 
       progressBarContainer.style.display = 'block'; 
       progressBar.style.transform = 'scaleX(0)'; 
     }
-    
     function hideProgressSmooth() { 
       progressBar.style.transform = 'scaleX(1)'; 
       setTimeout(() => {
@@ -363,7 +264,6 @@
         progressBar.style.transform = 'scaleX(0)';
       }, 500); 
     }
-    
     function setButtonLoading(button, isLoading) {
       if (isLoading) {
         button.classList.add('loading');
@@ -373,27 +273,16 @@
         button.disabled = false;
       }
     }
-    
     function showIPFSPreview(imageURL, videoURL, metadataURL) {
       previewImage.innerHTML = '';
       previewVideo.innerHTML = '';
       previewMetadata.innerHTML = '';
-      
-      if (imageURL) {
-        previewImage.innerHTML = `🖼️ Image: <a href="${imageURL.http}" target="_blank">${imageURL.ipfs}</a>`;
-      }
-      if (videoURL) {
-        previewVideo.innerHTML = `🎬 Video: <a href="${videoURL.http}" target="_blank">${videoURL.ipfs}</a>`;
-      }
-      if (metadataURL) {
-        previewMetadata.innerHTML = `📄 Metadata: <a href="${metadataURL.http}" target="_blank">${metadataURL.ipfs}</a>`;
-      }
+      if (imageURL) previewImage.innerHTML = `🖼️ Image: <a href="${imageURL.http}" target="_blank">${imageURL.ipfs}</a>`;
+      if (videoURL) previewVideo.innerHTML = `🎬 Video: <a href="${videoURL.http}" target="_blank">${videoURL.ipfs}</a>`;
+      if (metadataURL) previewMetadata.innerHTML = `📄 Metadata: <a href="${metadataURL.http}" target="_blank">${metadataURL.ipfs}</a>`;
       ipfsPreview.style.display = 'block';
-      setTimeout(() => {
-        ipfsPreview.style.display = 'none';
-      }, 10000);
+      setTimeout(() => { ipfsPreview.style.display = 'none'; }, 10000);
     }
-    
     function hashStringToInt(str, mod = 1000) { 
       let h = 2166136261 >>> 0; 
       for (let i = 0; i < str.length; i++) {
@@ -402,69 +291,42 @@
       } 
       return h % mod; 
     }
-    
-    function seededRandomFloat(seedStr) { 
-      return hashStringToInt(seedStr, 10000) / 10000; 
-    }
+    function seededRandomFloat(seedStr) { return hashStringToInt(seedStr, 10000) / 10000; }
 
-    // ============================================ //
-    // 25. TOKEN LIST UI / TOKENU SARAKSTA INTERFESS
-    // ============================================ //
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
-        tokenListContent.innerHTML = '<tr><td colspan="2" style="color:#777;">No assets</td><\/tr>'; 
+        tokenListContent.innerHTML = '<td><td colspan="2" style="color:#777;">No assets</td></tr>'; 
         return; 
       }
-      
       tokenListContent.innerHTML = '';
-      
       tokens.forEach(t => {
         const tr = document.createElement('tr');
         const addrTd = document.createElement('td'); 
         addrTd.textContent = t.address; 
         addrTd.title = t.address;
         const balTd = document.createElement('td'); 
-        if(t.isNFT) {
-          balTd.textContent = `NFT (ID: ${t.tokenId || 'N/A'})`;
-        } else {
-          balTd.textContent = t.balance.toFixed(4);
-        }
-        tr.appendChild(addrTd); 
-        tr.appendChild(balTd);
+        balTd.textContent = t.isNFT ? `NFT (ID: ${t.tokenId || 'N/A'})` : t.balance.toFixed(4);
+        tr.appendChild(addrTd); tr.appendChild(balTd);
         tokenListContent.appendChild(tr);
       });
     }
 
-    // ============================================ //
-    // 26. API CALLS / API IZSAUKUMI                //
-    // ============================================ //
     async function getTokens() {
       if (!account) return [];
       showProgressSmooth();
       try {
         const res = await fetch(`/api/getTokens?account=${encodeURIComponent(account)}`);
-        if (!res.ok) { 
-          statusMsg.textContent = 'Token API unavailable'; 
-          return []; 
-        }
+        if (!res.ok) return [];
         const data = await res.json();
-        
         if (!data?.result?.tokenBalances) return [];
-        
         return data.result.tokenBalances.map(t => {
           const decimals = t.decimals != null ? Number(t.decimals) : 18;
           const balance = Number(ethers.formatUnits(t.tokenBalance || "0x0", decimals));
           const address = (t.contractAddress || "").toLowerCase();
           return { address, balance, symbol: t.symbol || address, isNFT: false };
         }).filter(t => t.balance > 0);
-        
-      } catch(e) { 
-        console.error(e); 
-        statusMsg.textContent = 'Failed fetching tokens'; 
-        return []; 
-      } finally { 
-        hideProgressSmooth(); 
-      }
+      } catch(e) { console.error(e); return []; } 
+      finally { hideProgressSmooth(); }
     }
 
     async function getAllNFTs() {
@@ -474,9 +336,7 @@
         const res = await fetch(`/api/getAllNFTs?account=${encodeURIComponent(account)}`);
         if (!res.ok) return [];
         const data = await res.json();
-        
         if (!data?.result?.nfts) return [];
-        
         return data.result.nfts.map(nft => ({
           address: nft.contract.address,
           symbol: nft.contract.symbol || 'NFT',
@@ -484,17 +344,10 @@
           isNFT: true,
           tokenId: nft.id.tokenId
         }));
-      } catch(e) { 
-        console.error(e); 
-        return []; 
-      } finally { 
-        hideProgressSmooth(); 
-      }
+      } catch(e) { console.error(e); return []; } 
+      finally { hideProgressSmooth(); }
     }
 
-    // ============================================ //
-    // 27. WALLET CONNECTION / MAKU SAVIENOŠANA    //
-    // ============================================ //
     async function connectWallet() {
       setButtonLoading(connectBtn, true);
       showProgressSmooth();
@@ -508,12 +361,9 @@
           alert('Please install MetaMask!');
           return;
         }
-
         accountDisplay.textContent = 'Connected account: ' + account;
-        
         const balance = await provider.getBalance(account);
         ethBalance = Number(ethers.formatEther(balance));
-        
         renderBtn.disabled = false;
         recordBtn.disabled = false;
         generateNFTBtn.disabled = false;
@@ -528,151 +378,87 @@
       }
     }
 
-    // ============================================ //
-    // 28. IPFS FUNCTIONS / IPFS FUNKCIJAS          //
-    // ============================================ //
     async function uploadFileToIPFS(file) {
       const formData = new FormData();
       formData.append('file', file);
-      
-      const response = await fetch('/api/uploadToIPFS', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`);
-      }
-      
+      const response = await fetch('/api/uploadToIPFS', { method: 'POST', body: formData });
+      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
       const data = await response.json();
-      return {
-        ipfs: data.ipfs,
-        http: data.http,
-        cid: data.cid
-      };
+      return { ipfs: data.ipfs, http: data.http, cid: data.cid };
     }
-    
+
     async function uploadImageToIPFS(canvas) {
       statusMsg.textContent = 'Converting image...';
-      
       return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
-          if (!blob) {
-            reject(new Error('Failed to convert canvas'));
-            return;
-          }
-          
+          if (!blob) { reject(new Error('Failed to convert canvas')); return; }
           const file = new File([blob], `snapshot_${Date.now()}.jpg`, { type: 'image/jpeg' });
-          
           try {
             statusMsg.textContent = 'Uploading image to IPFS...';
-            const result = await uploadFileToIPFS(file);
-            resolve(result);
-          } catch (error) {
-            reject(error);
-          }
+            resolve(await uploadFileToIPFS(file));
+          } catch (error) { reject(error); }
         }, 'image/jpeg', 0.85);
       });
     }
-    
+
     async function uploadVideoToIPFS(canvas, duration = 5000) {
       statusMsg.textContent = 'Recording video (MP4)...';
-      
       const stream = canvas.captureStream(30);
-      
       let mimeType = 'video/mp4';
       if (!MediaRecorder.isTypeSupported(mimeType)) {
-        console.warn('MP4 not supported, using WebM');
         mimeType = 'video/webm';
       }
-      
       const recorder = new MediaRecorder(stream, { mimeType });
       const chunks = [];
-      
       return new Promise((resolve, reject) => {
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size) {
-            chunks.push(e.data);
-          }
-        };
-        
+        recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
         recorder.onstop = async () => {
           const ext = mimeType === 'video/mp4' ? 'mp4' : 'webm';
           const blob = new Blob(chunks, { type: mimeType });
           const file = new File([blob], `video_${Date.now()}.${ext}`, { type: mimeType });
-          
           try {
             statusMsg.textContent = 'Uploading video to IPFS...';
-            const result = await uploadFileToIPFS(file);
-            resolve(result);
-          } catch (error) {
-            reject(error);
-          }
+            resolve(await uploadFileToIPFS(file));
+          } catch (error) { reject(error); }
         };
-        
         recorder.onerror = (err) => reject(err);
-        
         recorder.start();
-        setTimeout(() => {
-          if (recorder.state === 'recording') recorder.stop();
-        }, duration);
+        setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, duration);
       });
     }
-    
+
     async function uploadMetadataToIPFS(metadata) {
       statusMsg.textContent = 'Uploading metadata to IPFS...';
-      
       const response = await fetch('/api/uploadMetadataToIPFS', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metadata })
       });
-      
-      if (!response.ok) {
-        throw new Error(`Metadata upload failed: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`Metadata upload failed: ${response.status}`);
       const data = await response.json();
-      return {
-        ipfs: data.ipfs,
-        http: data.http,
-        cid: data.cid
-      };
+      return { ipfs: data.ipfs, http: data.http, cid: data.cid };
     }
-    
-    // ============================================ //
-    // 29. GENERATE NFT FUNCTION / NFT ĢENERĒŠANA   //
-    // ============================================ //
+
     async function generateNFT() {
       if (!account || !provider || !signer) {
         statusMsg.textContent = 'Connect wallet first';
         return;
       }
-
       const userConfirmed = confirm(`Generate NFT from visualization?\n\nCost: 0.01 ETH + gas\n\nProceed?`);
-      
-      if (!userConfirmed) {
-        statusMsg.textContent = 'Cancelled';
-        return;
-      }
+      if (!userConfirmed) { statusMsg.textContent = 'Cancelled'; return; }
 
       setButtonLoading(generateNFTBtn, true);
       showProgressSmooth();
-
       try {
         const imageResult = await uploadImageToIPFS(canvas);
         statusMsg.textContent = 'Image uploaded';
         lastImageURL = imageResult;
-        
         let videoResult = null;
         try {
           videoResult = await uploadVideoToIPFS(canvas, 5000);
           statusMsg.textContent = 'Video uploaded';
           lastVideoURL = videoResult;
-        } catch (error) {
-          console.warn('Video upload failed:', error);
-        }
-        
+        } catch (error) { console.warn('Video upload failed:', error); }
         const metadata = {
           name: "Wallet Visualization NFT",
           description: `Generated from wallet ${account.substring(0, 10)}... on ${new Date().toISOString()}`,
@@ -684,44 +470,27 @@
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
         };
-        
-        if (videoResult) {
-          metadata.animation_url = videoResult.ipfs;
-        }
-        
+        if (videoResult) metadata.animation_url = videoResult.ipfs;
         const metadataResult = await uploadMetadataToIPFS(metadata);
         statusMsg.textContent = 'Metadata uploaded';
         lastMetadataURL = metadataResult;
-        
         showIPFSPreview(imageResult, videoResult, metadataResult);
-        
         statusMsg.textContent = 'Minting NFT...';
-        
         const NFT_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
         const nftABI = ["function mint(address to, string memory uri) external payable"];
         const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, nftABI, signer);
         const mintPrice = ethers.parseEther("0.01");
-        
-        const tx = await nftContract.mint(account, metadataResult.ipfs, {
-          value: mintPrice,
-          gasLimit: 500000
-        });
-        
+        const tx = await nftContract.mint(account, metadataResult.ipfs, { value: mintPrice, gasLimit: 500000 });
         statusMsg.textContent = 'Transaction submitted...';
         const receipt = await tx.wait();
-        
         if (receipt.status === 1) {
           statusMsg.textContent = 'NFT minted successfully!';
           alert(`NFT Created!\n\nMetadata: ${metadataResult.ipfs}\nView: ${metadataResult.http}\nImage: ${imageResult.http}\nVideo: ${videoResult ? videoResult.http : 'N/A'}\nTx: ${receipt.hash}`);
         }
-        
       } catch (error) {
         console.error(error);
-        if (error.code === 'ACTION_REJECTED') {
-          statusMsg.textContent = 'Transaction rejected';
-        } else {
-          statusMsg.textContent = `Error: ${error.message.substring(0, 100)}`;
-        }
+        if (error.code === 'ACTION_REJECTED') statusMsg.textContent = 'Transaction rejected';
+        else statusMsg.textContent = `Error: ${error.message.substring(0, 100)}`;
         alert('NFT generation failed: ' + error.message);
       } finally {
         setButtonLoading(generateNFTBtn, false);
@@ -729,14 +498,10 @@
       }
     }
 
-    // ============================================ //
-    // 30. VISUALIZATION / VIZUALIZĀCIJA            //
-    // ============================================ //
     async function initParticlesOnce() {
       initialParticles = [];
       const particleCount = Math.min(150, 50 + (tokens.length || 0) * 15);
       const seedBase = (account || '') + String(ethBalance) + String(txCount);
-      
       for (let i = 0; i < particleCount; i++) {
         const t = tokens.length ? tokens[i % tokens.length] : { balance: 1, address: String(i), symbol: 'T' };
         const balanceFactor = t.isNFT ? 1 : Math.min(t.balance || 0, 20) / 20;
@@ -750,10 +515,7 @@
         initialParticles.push({ angle, radius, r, hue, speed, token: t });
       }
     }
-    
-    function cloneParticles() { 
-      return initialParticles.map(p => ({ ...p })); 
-    }
+    function cloneParticles() { return initialParticles.map(p => ({ ...p })); }
 
     function drawFrame(frame, showTokensFrame) {
       const dpr = window.devicePixelRatio || 1;
@@ -765,7 +527,6 @@
       ctx.fillRect(0, 0, W, H);
       const cx0 = W / 2, cy0 = H / 2;
 
-      // 30.1. Draw connections between particles / Zīmē savienojumus starp daļiņām
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i], p2 = particles[j];
@@ -790,7 +551,6 @@
         }
       }
 
-      // 30.2. Draw particles / Zīmē daļiņas
       particles.forEach(p => {
         p.angle += p.speed;
         const cx = cx0 + Math.cos(p.angle) * p.radius;
@@ -805,7 +565,6 @@
         ctx.fill();
       });
 
-      // 30.3. Display ETH balance / Rāda ETH bilanci
       if (showTokensFrame && showInfo) {
         ctx.fillStyle = '#0ff';
         ctx.font = '22px Inter';
@@ -815,10 +574,7 @@
 
     async function renderSnapshot() {
       if (!account) await connectWallet();
-      if (!provider || !account) {
-        statusMsg.textContent = 'Wallet not connected';
-        return;
-      }
+      if (!provider || !account) { statusMsg.textContent = 'Wallet not connected'; return; }
 
       setButtonLoading(renderBtn, true);
       stopAnimation();
@@ -827,22 +583,11 @@
       statusMsg.textContent = '';
 
       const steps = [
-        { name: 'ETH balance', func: async () => { 
-          ethBalance = Number(ethers.formatEther(await provider.getBalance(account))) || 0; 
-        }},
-        { name: 'Transaction count', func: async () => { 
-          txCount = Number(await provider.getTransactionCount(account)) || 0; 
-        }},
-        { name: 'ERC-20 tokens', func: async () => { 
-          tokens = await getTokens(); 
-        }},
-        { name: 'NFTs', func: async () => { 
-          tokens = [...tokens, ...await getAllNFTs()]; 
-        }},
-        { name: 'Visualization', func: async () => { 
-          await initParticlesOnce(); 
-          particles = cloneParticles(); 
-        }}
+        { name: 'ETH balance', func: async () => { ethBalance = Number(ethers.formatEther(await provider.getBalance(account))) || 0; }},
+        { name: 'Transaction count', func: async () => { txCount = Number(await provider.getTransactionCount(account)) || 0; }},
+        { name: 'ERC-20 tokens', func: async () => { tokens = await getTokens(); }},
+        { name: 'NFTs', func: async () => { tokens = [...tokens, ...await getAllNFTs()]; }},
+        { name: 'Visualization', func: async () => { await initParticlesOnce(); particles = cloneParticles(); }}
       ];
 
       let currentStep = 0, totalSteps = steps.length;
@@ -863,12 +608,7 @@
           await step.func();
           currentStep++;
         }
-
-        if (showInfo) {
-          tokenListContainer.style.display = 'block';
-          updateTokenListUI();
-        }
-
+        if (showInfo) { tokenListContainer.style.display = 'block'; updateTokenListUI(); }
         running = false;
         progressBar.style.transform = 'scaleX(1)';
         statusMsg.textContent = `Ready - ${tokens.length} assets found`;
@@ -884,25 +624,13 @@
       }
     }
 
-    function animate(frame = 0) { 
-      drawFrame(frame, true); 
-      animRequest = requestAnimationFrame(() => animate(frame + 1)); 
-    }
-    
-    function stopAnimation() { 
-      if (animRequest) cancelAnimationFrame(animRequest); 
-      animRequest = null; 
-    }
+    function animate(frame = 0) { drawFrame(frame, true); animRequest = requestAnimationFrame(() => animate(frame + 1)); }
+    function stopAnimation() { if (animRequest) cancelAnimationFrame(animRequest); animRequest = null; }
 
-    // ============================================ //
-    // 31. VIDEO RECORDING / VIDEO IERAKSTĪŠANA     //
-    // ============================================ //
     function pickSupportedMimeType() {
       const candidates = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
       for (const c of candidates) {
-        try { 
-          if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) return c; 
-        } catch (e) {}
+        try { if (MediaRecorder.isTypeSupported(c)) return c; } catch (e) {}
       }
       return '';
     }
@@ -927,23 +655,13 @@
       if (!animRequest) animate();
 
       let stream;
-      try { 
-        stream = canvas.captureStream(30); 
-      } catch (err) { 
-        statusMsg.textContent = 'Not supported'; 
-        cleanup(); 
-        return; 
-      }
+      try { stream = canvas.captureStream(30); } catch (err) { statusMsg.textContent = 'Not supported'; cleanup(); return; }
 
       const mime = pickSupportedMimeType();
       let recorder;
       try {
         recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      } catch (err) {
-        alert('Recording not available');
-        cleanup();
-        return;
-      }
+      } catch (err) { alert('Recording not available'); cleanup(); return; }
 
       const chunks = [];
       recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
@@ -973,10 +691,7 @@
         a.download = `visualization_${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
         showInfo = previousShowInfo;
         tokenListContainer.style.display = showInfo ? 'block' : 'none';
         updateTokenListUI();
@@ -1005,19 +720,14 @@
       }
     }
 
-    // ============================================ //
-    // 32. EVENT LISTENERS / NOTIKUMU KLAUSĪTĀJI    //
-    // ============================================ //
     connectBtn.addEventListener('click', connectWallet);
     renderBtn.addEventListener('click', renderSnapshot);
     generateNFTBtn.addEventListener('click', generateNFT);
     recordBtn.addEventListener('click', startRecording);
-    
     fullscreenIcon.addEventListener('click', () => {
       if (!document.fullscreenElement) canvas.requestFullscreen().catch(() => {});
       else document.exitFullscreen().catch(() => {});
     });
-    
     toggleInfoIcon.addEventListener('click', () => {
       showInfo = !showInfo;
       tokenListContainer.style.display = showInfo ? 'block' : 'none';
