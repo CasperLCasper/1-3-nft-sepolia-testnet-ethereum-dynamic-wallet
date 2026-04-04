@@ -145,7 +145,7 @@
       word-break: break-all;
     }
 
-    /* Custom Confirm Dialog - White version */
+    /* Custom Confirm Dialog - White version with colored buttons */
     .custom-confirm {
       position: fixed;
       top: 0;
@@ -193,22 +193,22 @@
     }
 
     .confirm-btn.ok {
-      background: #0ff;
-      color: #000;
+      background: #00e676;
+      color: #fff;
     }
 
     .confirm-btn.ok:hover {
-      background: #00e6cc;
+      background: #00c853;
       transform: translateY(-2px);
     }
 
     .confirm-btn.cancel {
-      background: #e0e0e0;
-      color: #1a1a1a;
+      background: #e53935;
+      color: #fff;
     }
 
     .confirm-btn.cancel:hover {
-      background: #cccccc;
+      background: #c62828;
       transform: translateY(-2px);
     }
   </style>
@@ -270,7 +270,7 @@
       <div id="toggleInfoIcon" role="button" tabindex="0" aria-label="Toggle info">ℹ <span id="infoText">Info</span></div>
 
       <div id="tokenListContainer" aria-hidden="true">
-        <table>
+        <tr>
           <thead><tr><th>Address</th><th>Balance</th></tr></thead>
           <tbody id="tokenListContent"></tbody>
         </table>
@@ -285,7 +285,7 @@
     <span id="previewMetadata"></span>
   </div>
 
-  <!-- Custom Confirm Dialog - White version -->
+  <!-- Custom Confirm Dialog -->
   <div id="customConfirm" class="custom-confirm" style="display:none;">
     <div class="custom-confirm-content">
       <p id="confirmMessage"></p>
