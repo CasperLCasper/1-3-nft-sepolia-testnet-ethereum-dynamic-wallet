@@ -452,7 +452,9 @@
         statusMsg.textContent = 'Connect wallet first';
         return;
       }
-      const userConfirmed = confirm(`Generate NFT from visualization?\n\nCost: 0.01 ETH + gas\n\nProceed?`);
+      
+      // UPDATED CONFIRM MESSAGE
+      const userConfirmed = confirm(`Create NFT from your wallet visualization?\n\nFee: 0.01 ETH + gas\n\nDo you want to continue?`);
       if (!userConfirmed) { 
         statusMsg.textContent = 'Cancelled'; 
         return; 
