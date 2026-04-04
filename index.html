@@ -144,6 +144,75 @@
       color: #0ff;
       word-break: break-all;
     }
+
+    /* Custom Confirm Dialog */
+    .custom-confirm {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .custom-confirm-content {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 28px;
+      min-width: 340px;
+      max-width: 420px;
+      border: 1px solid #333;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .custom-confirm-content p {
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .custom-confirm-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .confirm-btn {
+      padding: 8px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .confirm-btn.ok {
+      background: #0ff;
+      color: #000;
+    }
+
+    .confirm-btn.ok:hover {
+      background: #00e6cc;
+      transform: translateY(-2px);
+    }
+
+    .confirm-btn.cancel {
+      background: #333;
+      color: #fff;
+    }
+
+    .confirm-btn.cancel:hover {
+      background: #444;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 
@@ -218,6 +287,17 @@
     <span id="previewMetadata"></span>
   </div>
 
+  <!-- Custom Confirm Dialog -->
+  <div id="customConfirm" class="custom-confirm" style="display:none;">
+    <div class="custom-confirm-content">
+      <p id="confirmMessage"></p>
+      <div class="custom-confirm-buttons">
+        <button id="confirmCancel" class="confirm-btn cancel">Cancel</button>
+        <button id="confirmOk" class="confirm-btn ok">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
@@ -260,6 +340,38 @@
     const previewImage = document.getElementById('previewImage');
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
+
+    // Custom Confirm Function
+    function customConfirm(message) {
+      return new Promise((resolve) => {
+        const confirmDiv = document.getElementById('customConfirm');
+        const messageP = document.getElementById('confirmMessage');
+        const okBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+        
+        messageP.textContent = message;
+        confirmDiv.style.display = 'flex';
+        
+        const cleanup = () => {
+          confirmDiv.style.display = 'none';
+          okBtn.removeEventListener('click', okHandler);
+          cancelBtn.removeEventListener('click', cancelHandler);
+        };
+        
+        const okHandler = () => {
+          cleanup();
+          resolve(true);
+        };
+        
+        const cancelHandler = () => {
+          cleanup();
+          resolve(false);
+        };
+        
+        okBtn.addEventListener('click', okHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
+      });
+    }
 
     function showProgressSmooth() { 
       progressBarContainer.style.display = 'block'; 
@@ -453,8 +565,8 @@
         return;
       }
       
-      // UPDATED CONFIRM MESSAGE
-      const userConfirmed = confirm(`Create NFT from your wallet visualization?\n\nFee: 0.01 ETH + gas\n\nDo you want to continue?`);
+      // Custom confirm in English
+      const userConfirmed = await customConfirm(`Create NFT from your wallet visualization?\n\nFee: 0.01 ETH + gas\n\nDo you want to continue?`);
       if (!userConfirmed) { 
         statusMsg.textContent = 'Cancelled'; 
         return; 
