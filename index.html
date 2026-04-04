@@ -145,6 +145,135 @@
       color: #0ff;
       word-break: break-all;
     }
+
+    /* ============================================ */
+    /* MODERN NOTIFICATION / MODERNS PAZIŅOJUMS     */
+    /* ============================================ */
+    .notification {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      min-width: 320px;
+      max-width: 400px;
+      background: #1a1a1a;
+      border-left: 4px solid #0ff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .notification-close {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 0 0 16px;
+      transition: color 0.2s;
+    }
+
+    .notification-close:hover {
+      color: #fff;
+      transform: none;
+      box-shadow: none;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ============================================ */
+    /* CUSTOM CONFIRM DIALOG / MODERNS APSTIPRINĀJUMS */
+    /* ============================================ */
+    .confirm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .confirm-dialog {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 24px;
+      min-width: 320px;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      border: 1px solid #333;
+    }
+
+    .confirm-message {
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .confirm-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .confirm-btn.confirm {
+      background: #0ff;
+      color: #000;
+    }
+
+    .confirm-btn.confirm:hover {
+      background: #00e6cc;
+      transform: translateY(-2px);
+    }
+
+    .confirm-btn.cancel {
+      background: #333;
+      color: #fff;
+    }
+
+    .confirm-btn.cancel:hover {
+      background: #444;
+      transform: translateY(-2px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 
@@ -219,6 +348,14 @@
     <span id="previewMetadata"></span>
   </div>
 
+  <!-- Modernais paziņojums -->
+  <div id="customNotification" class="notification" style="display:none;">
+    <div class="notification-content">
+      <span id="notificationMessage"></span>
+      <button id="notificationClose" class="notification-close">&times;</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
@@ -262,6 +399,80 @@
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
 
+    // ============================================ //
+    // MODERN NOTIFICATION SYSTEM                   //
+    // ============================================ //
+    function showNotification(message, isError = false) {
+      const notification = document.getElementById('customNotification');
+      const messageSpan = document.getElementById('notificationMessage');
+      const closeBtn = document.getElementById('notificationClose');
+      
+      messageSpan.textContent = message;
+      notification.style.borderLeftColor = isError ? '#ff4444' : '#0ff';
+      notification.style.display = 'block';
+      
+      // Automātiski paslēpt pēc 4 sekundēm
+      const timeout = setTimeout(() => {
+        notification.style.display = 'none';
+      }, 4000);
+      
+      // Aizvērt ar pogu
+      closeBtn.onclick = () => {
+        clearTimeout(timeout);
+        notification.style.display = 'none';
+      };
+    }
+
+    // ============================================ //
+    // MODERN CONFIRM DIALOG                        //
+    // ============================================ //
+    function customConfirm(message) {
+      return new Promise((resolve) => {
+        // Pārbaudīt vai jau eksistē
+        let overlay = document.querySelector('.confirm-overlay');
+        if (overlay) overlay.remove();
+        
+        overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-dialog">
+            <div class="confirm-message">${message}</div>
+            <div class="confirm-buttons">
+              <button class="confirm-btn cancel">Cancel</button>
+              <button class="confirm-btn confirm">Confirm</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        const confirmBtn = overlay.querySelector('.confirm-btn.confirm');
+        const cancelBtn = overlay.querySelector('.confirm-btn.cancel');
+        
+        const cleanup = () => {
+          overlay.remove();
+        };
+        
+        confirmBtn.onclick = () => {
+          cleanup();
+          resolve(true);
+        };
+        
+        cancelBtn.onclick = () => {
+          cleanup();
+          resolve(false);
+        };
+        
+        // Aizvērt, ja noklikšķina uz fona
+        overlay.onclick = (e) => {
+          if (e.target === overlay) {
+            cleanup();
+            resolve(false);
+          }
+        };
+      });
+    }
+
     function showProgressSmooth() { 
       progressBarContainer.style.display = 'block'; 
       progressBar.style.transform = 'scaleX(0)'; 
@@ -304,7 +515,7 @@
 
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
-        tokenListContent.innerHTML = '<td><td colspan="2" style="color:#777;">No assets</td></tr>'; 
+        tokenListContent.innerHTML = '<tr><td colspan="2" style="color:#777;">No assets<\/td><\/tr>'; 
         return; 
       }
       tokenListContent.innerHTML = '';
@@ -367,7 +578,7 @@
           signer = await provider.getSigner();
           account = await signer.getAddress();
         } else {
-          alert('Please install MetaMask!');
+          showNotification('Please install MetaMask!', true);
           return;
         }
         accountDisplay.textContent = 'Connected account: ' + account;
@@ -376,11 +587,10 @@
         renderBtn.disabled = false;
         recordBtn.disabled = false;
         generateNFTBtn.disabled = false;
-        statusMsg.textContent = 'Wallet connected';
+        showNotification('Wallet connected successfully!');
       } catch (err) {
         console.error(err);
-        statusMsg.textContent = 'Connection failed';
-        alert('Wallet connection failed');
+        showNotification('Wallet connection failed!', true);
       } finally { 
         setButtonLoading(connectBtn, false);
         hideProgressSmooth(); 
@@ -450,22 +660,26 @@
 
     async function generateNFT() {
       if (!account || !provider || !signer) {
-        statusMsg.textContent = 'Connect wallet first';
+        showNotification('Please connect wallet first!', true);
         return;
       }
-      const userConfirmed = confirm(`Generate NFT from visualization?\n\nCost: 0.01 ETH + gas\n\nProceed?`);
-      if (!userConfirmed) { statusMsg.textContent = 'Cancelled'; return; }
+      
+      const confirmed = await customConfirm(`Generate NFT from visualization?\n\nCost: 0.01 ETH + gas\n\nProceed?`);
+      if (!confirmed) { 
+        showNotification('Cancelled'); 
+        return; 
+      }
 
       setButtonLoading(generateNFTBtn, true);
       showProgressSmooth();
       try {
         const imageResult = await uploadImageToIPFS(canvas);
-        statusMsg.textContent = 'Image uploaded';
+        showNotification('Image uploaded to IPFS');
         lastImageURL = imageResult;
         let videoResult = null;
         try {
           videoResult = await uploadVideoToIPFS(canvas, 5000);
-          statusMsg.textContent = 'Video uploaded';
+          showNotification('Video uploaded to IPFS');
           lastVideoURL = videoResult;
         } catch (error) { console.warn('Video upload failed:', error); }
         const metadata = {
@@ -481,7 +695,7 @@
         };
         if (videoResult) metadata.animation_url = videoResult.ipfs;
         const metadataResult = await uploadMetadataToIPFS(metadata);
-        statusMsg.textContent = 'Metadata uploaded';
+        showNotification('Metadata uploaded to IPFS');
         lastMetadataURL = metadataResult;
         showIPFSPreview(imageResult, videoResult, metadataResult);
         statusMsg.textContent = 'Minting NFT...';
@@ -493,14 +707,12 @@
         statusMsg.textContent = 'Transaction submitted...';
         const receipt = await tx.wait();
         if (receipt.status === 1) {
-          statusMsg.textContent = 'NFT minted successfully!';
-          alert(`NFT Created!\n\nMetadata: ${metadataResult.ipfs}\nView: ${metadataResult.http}\nImage: ${imageResult.http}\nVideo: ${videoResult ? videoResult.http : 'N/A'}\nTx: ${receipt.hash}`);
+          showNotification(`NFT minted successfully!\nTx: ${receipt.hash.substring(0, 16)}...`);
         }
       } catch (error) {
         console.error(error);
-        if (error.code === 'ACTION_REJECTED') statusMsg.textContent = 'Transaction rejected';
-        else statusMsg.textContent = `Error: ${error.message.substring(0, 100)}`;
-        alert('NFT generation failed: ' + error.message);
+        if (error.code === 'ACTION_REJECTED') showNotification('Transaction rejected', true);
+        else showNotification(`Error: ${error.message.substring(0, 100)}`, true);
       } finally {
         setButtonLoading(generateNFTBtn, false);
         hideProgressSmooth();
@@ -583,7 +795,7 @@
 
     async function renderSnapshot() {
       if (!account) await connectWallet();
-      if (!provider || !account) { statusMsg.textContent = 'Wallet not connected'; return; }
+      if (!provider || !account) { showNotification('Wallet not connected', true); return; }
 
       setButtonLoading(renderBtn, true);
       stopAnimation();
@@ -627,7 +839,7 @@
         running = false;
         hideProgressSmooth();
         console.error(e);
-        statusMsg.textContent = 'Render failed';
+        showNotification('Render failed', true);
       } finally {
         setButtonLoading(renderBtn, false);
       }
@@ -664,17 +876,17 @@
       if (!animRequest) animate();
 
       let stream;
-      try { stream = canvas.captureStream(30); } catch (err) { statusMsg.textContent = 'Not supported'; cleanup(); return; }
+      try { stream = canvas.captureStream(30); } catch (err) { showNotification('Recording not supported', true); cleanup(); return; }
 
       const mime = pickSupportedMimeType();
       let recorder;
       try {
         recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      } catch (err) { alert('Recording not available'); cleanup(); return; }
+      } catch (err) { showNotification('Recording not available', true); cleanup(); return; }
 
       const chunks = [];
       recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-      recorder.onerror = (ev) => { console.error(ev); statusMsg.textContent = 'Error'; };
+      recorder.onerror = (ev) => { console.error(ev); showNotification('Recording error', true); };
       recorder.onstart = () => { statusMsg.textContent = 'Recording...'; };
       recorder.start();
 
@@ -704,7 +916,7 @@
         showInfo = previousShowInfo;
         tokenListContainer.style.display = showInfo ? 'block' : 'none';
         updateTokenListUI();
-        statusMsg.textContent = 'Recording finished';
+        showNotification('Recording finished!');
         recordTimer.textContent = 'Recording: 0 / 20 s';
         hideProgressSmooth();
         setButtonLoading(recordBtn, false);
