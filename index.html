@@ -203,7 +203,7 @@
       <div id="toggleInfoIcon" role="button" tabindex="0" aria-label="Toggle info">ℹ <span id="infoText">Info</span></div>
 
       <div id="tokenListContainer" aria-hidden="true">
-        <table>
+        <tr>
           <thead><tr><th>Address</th><th>Balance</th></tr></thead>
           <tbody id="tokenListContent"></tbody>
         </table>
@@ -301,9 +301,10 @@
     }
     function seededRandomFloat(seedStr) { return hashStringToInt(seedStr, 10000) / 10000; }
 
+    // ==================== LABOTĀ TABULA ====================
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
-        tokenListContent.innerHTML = '<tr><td colspan="2" style="color:#777;">No assets<\/td><\/tr>'; 
+        tokenListContent.innerHTML = '<td><td colspan="2" style="color:#777;">No assets<\/td><\/tr>'; 
         return; 
       }
       tokenListContent.innerHTML = '';
@@ -313,7 +314,11 @@
         addrTd.textContent = t.address; 
         addrTd.title = t.address;
         const balTd = document.createElement('td'); 
-        balTd.textContent = t.isNFT ? `NFT (ID: ${t.tokenId || 'N/A'})` : t.balance.toFixed(4);
+        if(t.isNFT) {
+          balTd.textContent = t.balance;  // NFT rāda tikai skaitu
+        } else {
+          balTd.textContent = t.balance.toFixed(4);
+        }
         tr.appendChild(addrTd); tr.appendChild(balTd);
         tokenListContent.appendChild(tr);
       });
@@ -337,7 +342,6 @@
       finally { hideProgressSmooth(); }
     }
 
-    // ==================== LABOTĀ getAllNFTs FUNKCIJA ====================
     async function getAllNFTs() {
       if (!account) return [];
       showProgressSmooth();
@@ -349,16 +353,11 @@
         // Pielāgojamies dažādiem API atbilžu formātiem
         let nfts = [];
         
-        // Formāts no /api/getAllNFTs
         if (data?.result?.nfts) {
           nfts = data.result.nfts;
-        } 
-        // Formāts no /api/getNFTs
-        else if (data?.nfts) {
+        } else if (data?.nfts) {
           nfts = data.nfts;
-        }
-        // Formāts no Alchemy tiešās atbildes
-        else if (data?.ownedNfts) {
+        } else if (data?.ownedNfts) {
           nfts = data.ownedNfts;
         }
         
@@ -496,7 +495,8 @@
           image: imageResult.ipfs,
           attributes: [
             { trait_type: "ETH Balance", value: ethBalance.toString() },
-            { trait_type: "Token Count", value: tokens.length.toString() },
+            { trait_type: "Token Count", value: tokens.filter(t => !t.isNFT).length.toString() },
+            { trait_type: "NFT Count", value: tokens.filter(t => t.isNFT).length.toString() },
             { trait_type: "Transaction Count", value: txCount.toString() },
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
