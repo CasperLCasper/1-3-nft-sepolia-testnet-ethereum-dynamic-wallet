@@ -39,6 +39,7 @@
     .theme-ocean { border-color: #00f; color: #00f; }
     .theme-sunset { border-color: #ff6600; color: #ff6600; }
     .theme-galaxy { border-color: #c026ff; color: #c026ff; }
+    .theme-rainbow { border-color: #ff00ff; color: #ff00ff; }
     
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
@@ -210,13 +211,14 @@
       </div>
     </header>
 
-    <!-- Theme Selector -->
+    <!-- Theme Selector - PIEVIENOTĀ TĒMU IZVĒLNE -->
     <div class="theme-selector">
       <button class="theme-btn theme-cyber active" data-theme="cyber">🌐 CYBER</button>
       <button class="theme-btn theme-forest" data-theme="forest">🌲 FOREST</button>
       <button class="theme-btn theme-ocean" data-theme="ocean">🌊 OCEAN</button>
       <button class="theme-btn theme-sunset" data-theme="sunset">🌅 SUNSET</button>
       <button class="theme-btn theme-galaxy" data-theme="galaxy">✨ GALAXY</button>
+      <button class="theme-btn theme-rainbow" data-theme="rainbow">🌈 RAINBOW</button>
     </div>
 
     <section class="controls" aria-label="Controls">
@@ -270,82 +272,60 @@
     ];
 
     // ============================================ //
-    // VISUALIZATION THEMES
+    // PARTICLE THEMES - TIKAI DAļIŅU STILI
     // ============================================ //
-    const THEMES = {
+    const PARTICLE_THEMES = {
       cyber: {
         name: 'Cyber',
-        bgStart: '#000000',
-        bgEnd: '#001a33',
-        particleHueBase: 200,
-        particleHueRange: 160,
-        glowColor: '#0ff',
-        connectionAlpha: 0.4,
-        particleMinSat: 70,
-        particleMaxSat: 100,
-        particleMinLight: 50,
-        particleMaxLight: 80,
-        textColor: '#0ff'
+        hueRange: [180, 220],
+        saturationRange: [70, 100],
+        lightnessRange: [60, 80],
+        connectionHueOffset: 0,
+        particleGlow: true
       },
       forest: {
         name: 'Forest',
-        bgStart: '#0a1a0a',
-        bgEnd: '#001a00',
-        particleHueBase: 120,
-        particleHueRange: 80,
-        glowColor: '#0f0',
-        connectionAlpha: 0.35,
-        particleMinSat: 70,
-        particleMaxSat: 95,
-        particleMinLight: 45,
-        particleMaxLight: 75,
-        textColor: '#2ecc71'
+        hueRange: [90, 150],
+        saturationRange: [65, 90],
+        lightnessRange: [50, 70],
+        connectionHueOffset: 0,
+        particleGlow: true
       },
       ocean: {
         name: 'Ocean',
-        bgStart: '#0a0a2a',
-        bgEnd: '#001a3a',
-        particleHueBase: 240,
-        particleHueRange: 60,
-        glowColor: '#4488ff',
-        connectionAlpha: 0.4,
-        particleMinSat: 65,
-        particleMaxSat: 90,
-        particleMinLight: 45,
-        particleMaxLight: 75,
-        textColor: '#3498db'
+        hueRange: [200, 260],
+        saturationRange: [60, 85],
+        lightnessRange: [55, 75],
+        connectionHueOffset: 0,
+        particleGlow: true
       },
       sunset: {
         name: 'Sunset',
-        bgStart: '#2a0a0a',
-        bgEnd: '#2a1a00',
-        particleHueBase: 30,
-        particleHueRange: 60,
-        glowColor: '#ff8844',
-        connectionAlpha: 0.45,
-        particleMinSat: 75,
-        particleMaxSat: 100,
-        particleMinLight: 55,
-        particleMaxLight: 85,
-        textColor: '#ff8844'
+        hueRange: [20, 60],
+        saturationRange: [75, 100],
+        lightnessRange: [60, 85],
+        connectionHueOffset: 0,
+        particleGlow: true
       },
       galaxy: {
         name: 'Galaxy',
-        bgStart: '#1a0a2a',
-        bgEnd: '#0a0a2a',
-        particleHueBase: 280,
-        particleHueRange: 100,
-        glowColor: '#c026ff',
-        connectionAlpha: 0.4,
-        particleMinSat: 75,
-        particleMaxSat: 100,
-        particleMinLight: 55,
-        particleMaxLight: 80,
-        textColor: '#c026ff'
+        hueRange: [260, 320],
+        saturationRange: [70, 100],
+        lightnessRange: [55, 80],
+        connectionHueOffset: 0,
+        particleGlow: true
+      },
+      rainbow: {
+        name: 'Rainbow',
+        hueRange: [0, 360],
+        saturationRange: [80, 100],
+        lightnessRange: [65, 85],
+        connectionHueOffset: 0,
+        particleGlow: true
       }
     };
     
-    let currentTheme = 'cyber';
+    let currentParticleTheme = 'cyber';
 
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
@@ -387,22 +367,11 @@
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
 
-    // Theme switching
-    function setTheme(themeName) {
-      currentTheme = themeName;
-      document.body.style.background = `linear-gradient(135deg, ${THEMES[themeName].bgStart}, ${THEMES[themeName].bgEnd})`;
+    // Tēmas maiņas funkcija
+    function setParticleTheme(themeName) {
+      currentParticleTheme = themeName;
       
-      // Update UI elements that depend on theme
-      const theme = THEMES[currentTheme];
-      document.getElementById('recordTimer').style.color = theme.textColor;
-      document.getElementById('fullscreenIcon').style.color = theme.textColor;
-      document.getElementById('toggleInfoIcon').style.color = theme.textColor;
-      
-      // Update token list header color
-      const thElements = document.querySelectorAll('#tokenListContainer th');
-      thElements.forEach(th => th.style.color = theme.textColor);
-      
-      // Reinitialize particles with new theme colors if they exist
+      // Atjaunot daļiņu krāsas ar jauno tēmu
       if (initialParticles.length > 0) {
         updateParticleColors();
         if (animRequest) {
@@ -414,14 +383,31 @@
     }
     
     function updateParticleColors() {
-      const theme = THEMES[currentTheme];
+      const theme = PARTICLE_THEMES[currentParticleTheme];
       const seedBase = (account || '') + String(ethBalance) + String(txCount);
+      
       particles.forEach((p, idx) => {
         const balanceFactor = p.token.isNFT ? 1 : Math.min(p.token.balance || 0, 20) / 20;
-        const hueVariation = hashStringToInt((p.token.address || '') + seedBase + idx, theme.particleHueRange);
-        p.hue = (theme.particleHueBase + hueVariation) % 360;
+        
+        let hue;
+        if (theme.hueRange[1] - theme.hueRange[0] >= 360) {
+          // Rainbow theme - pilns spektrs
+          hue = (idx * 15 + frameCount * 0.5) % 360;
+        } else {
+          const hueVariation = hashStringToInt((p.token.address || '') + seedBase + idx, theme.hueRange[1] - theme.hueRange[0]);
+          hue = theme.hueRange[0] + hueVariation;
+        }
+        
+        const sat = theme.saturationRange[0] + (theme.saturationRange[1] - theme.saturationRange[0]) * balanceFactor;
+        const light = theme.lightnessRange[0] + (theme.lightnessRange[1] - theme.lightnessRange[0]) * balanceFactor;
+        
+        p.hue = hue;
+        p.saturation = sat;
+        p.lightness = light;
       });
     }
+    
+    let frameCount = 0;
     
     // Theme button event listeners
     document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -429,7 +415,7 @@
         document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const theme = btn.getAttribute('data-theme');
-        setTheme(theme);
+        setParticleTheme(theme);
       });
     });
 
@@ -710,7 +696,7 @@
             { trait_type: "Token Count", value: tokens.length.toString() },
             { trait_type: "Transaction Count", value: txCount.toString() },
             { trait_type: "Platform", value: "Manifold" },
-            { trait_type: "Theme", value: THEMES[currentTheme].name },
+            { trait_type: "Theme", value: PARTICLE_THEMES[currentParticleTheme].name },
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
         };
@@ -756,41 +742,56 @@
       initialParticles = [];
       const particleCount = Math.min(150, 50 + (tokens.length || 0) * 15);
       const seedBase = (account || '') + String(ethBalance) + String(txCount);
-      const theme = THEMES[currentTheme];
+      const theme = PARTICLE_THEMES[currentParticleTheme];
       
       for (let i = 0; i < particleCount; i++) {
         const t = tokens.length ? tokens[i % tokens.length] : { balance: 1, address: String(i), symbol: 'T' };
         const balanceFactor = t.isNFT ? 1 : Math.min(t.balance || 0, 20) / 20;
-        const hueVariation = hashStringToInt((t.address || '') + seedBase + i, theme.particleHueRange);
-        let hue = (theme.particleHueBase + hueVariation) % 360;
+        
+        let hue;
+        if (theme.hueRange[1] - theme.hueRange[0] >= 360) {
+          hue = (i * 15) % 360;
+        } else {
+          const hueVariation = hashStringToInt((t.address || '') + seedBase + i, theme.hueRange[1] - theme.hueRange[0]);
+          hue = theme.hueRange[0] + hueVariation;
+        }
+        
         const ethFactor = Math.min(ethBalance / 10, 1);
         hue = (hue + ethFactor * 60) % 360;
         const speed = 0.005 + 0.01 * (hashStringToInt((t.symbol || t.address) + seedBase + i, 10) / 10);
         const r = t.isNFT ? 10 : 2 + 6 * balanceFactor;
         const angle = seededRandomFloat(seedBase + i + 'angle') * 2 * Math.PI;
         const radius = 50 + seededRandomFloat(seedBase + i + 'radius') * 400;
-        initialParticles.push({ angle, radius, r, hue, speed, token: t });
+        
+        const sat = theme.saturationRange[0] + (theme.saturationRange[1] - theme.saturationRange[0]) * balanceFactor;
+        const light = theme.lightnessRange[0] + (theme.lightnessRange[1] - theme.lightnessRange[0]) * balanceFactor;
+        
+        initialParticles.push({ 
+          angle, radius, r, hue, speed, token: t,
+          saturation: sat,
+          lightness: light
+        });
       }
     }
+    
     function cloneParticles() { return initialParticles.map(p => ({ ...p })); }
 
     function drawFrame(frame, showTokensFrame) {
-      const theme = THEMES[currentTheme];
+      frameCount = frame;
+      const theme = PARTICLE_THEMES[currentParticleTheme];
       const dpr = window.devicePixelRatio || 1;
       const scale = isMobile ? 0.6 : 1;
       const W = canvas.width / (dpr * scale);
       const H = canvas.height / (dpr * scale);
       
-      // Background with theme colors
-      const gradient = ctx.createLinearGradient(0, 0, W, H);
-      gradient.addColorStop(0, theme.bgStart);
-      gradient.addColorStop(1, theme.bgEnd);
-      ctx.fillStyle = gradient;
+      // Oriģinālais fons - paliek melns!
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, W, H);
       
       const cx0 = W / 2, cy0 = H / 2;
 
-      // Draw connections with theme colors
+      // Draw connections with theme-based colors
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i], p2 = particles[j];
@@ -802,13 +803,13 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
             const avgBalance = (Math.min(p1.token.balance, 20) + Math.min(p2.token.balance, 20)) / 40;
-            const alpha = theme.connectionAlpha * avgBalance * (1 - dist / 200);
+            const alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
             ctx.lineWidth = 1.5 + 2 * avgBalance;
             const txFactor = Math.log(txCount + 1) / 10;
             const hue = (p1.hue + p2.hue) / 2 + frame * 0.4 * txFactor;
-            const sat = theme.particleMinSat + (theme.particleMaxSat - theme.particleMinSat) * avgBalance;
-            const light = theme.particleMinLight + (theme.particleMaxLight - theme.particleMinLight) * avgBalance;
-            ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+            const avgSat = (p1.saturation + p2.saturation) / 2;
+            const avgLight = (p1.lightness + p2.lightness) / 2;
+            ctx.strokeStyle = `hsla(${hue}, ${avgSat}%, ${avgLight}%, ${alpha})`;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -817,39 +818,34 @@
         }
       }
 
-      // Draw particles with theme colors
+      // Draw particles with theme-based colors
       particles.forEach(p => {
         p.angle += p.speed;
         const cx = cx0 + Math.cos(p.angle) * p.radius;
         const cy = cy0 + Math.sin(p.angle) * p.radius;
-        const balanceFactor = p.token.isNFT ? 1 : Math.min(p.token.balance || 0, 20) / 20;
-        const sat = theme.particleMinSat + (theme.particleMaxSat - theme.particleMinSat) * balanceFactor;
-        const light = theme.particleMinLight + (theme.particleMaxLight - theme.particleMinLight) * balanceFactor;
         
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.r * 2.5);
-        gradient.addColorStop(0, `hsla(${p.hue}, ${sat}%, ${light + 10}%, 1)`);
-        gradient.addColorStop(0.5, `hsla(${p.hue}, ${sat}%, ${light}%, 0.9)`);
-        gradient.addColorStop(1, `hsla(${p.hue + 20}, ${sat}%, ${light - 20}%, 0.5)`);
+        gradient.addColorStop(0, `hsla(${p.hue}, ${p.saturation}%, ${p.lightness + 10}%, 1)`);
+        gradient.addColorStop(0.5, `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${p.hue + 20}, ${p.saturation}%, ${p.lightness - 20}%, 0.5)`);
         ctx.fillStyle = gradient;
         
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = theme.glowColor;
+        if (theme.particleGlow) {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, 0.8)`;
+        }
+        
         ctx.beginPath();
         ctx.arc(cx, cy, p.r, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
       });
 
-      // Draw info text with theme color
+      // Info text - paliek oriģināls
       if (showTokensFrame && showInfo) {
-        ctx.fillStyle = theme.textColor;
+        ctx.fillStyle = '#0ff';
         ctx.font = '22px Inter';
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = theme.glowColor;
-        ctx.fillText(`ETH: ${ethBalance.toFixed(4)}`, 20, 70);
-        ctx.fillText(`Assets: ${tokens.length}`, 20, 105);
-        ctx.fillText(`Theme: ${theme.name}`, 20, 140);
-        ctx.shadowBlur = 0;
+        ctx.fillText(`SepoliaETH: ${ethBalance.toFixed(4)}`, 10, 80);
       }
     }
 
@@ -867,7 +863,10 @@
         { name: 'ETH balance', func: async () => { ethBalance = Number(ethers.formatEther(await provider.getBalance(account))) || 0; }},
         { name: 'Transaction count', func: async () => { txCount = Number(await provider.getTransactionCount(account)) || 0; }},
         { name: 'ERC-20 tokens', func: async () => { tokens = await getTokens(); }},
-        { name: 'NFTs', func: async () => { tokens = [...tokens, ...await getAllNFTs()]; }},
+        { name: 'NFTs', func: async () => { 
+            const nfts = await getAllNFTs();
+            tokens = [...tokens, ...nfts];
+          }},
         { name: 'Visualization', func: async () => { await initParticlesOnce(); particles = cloneParticles(); }}
       ];
 
