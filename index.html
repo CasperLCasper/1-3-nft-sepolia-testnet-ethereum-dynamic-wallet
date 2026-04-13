@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic Wallet Visualizer — NFT Generator with IPFS</title>
+  <title>Dynamic Wallet Visualizer — Manifold NFT Generator</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
@@ -178,7 +178,7 @@
 
       <div class="header-text">
         <h1>Dynamic Wallet Visualizer</h1>
-        <p class="subtitle">Watch your Ethereum assets come alive — Create NFT on IPFS</p>
+        <p class="subtitle">Watch your Ethereum assets come alive — Create NFT on Manifold</p>
       </div>
     </header>
 
@@ -204,7 +204,7 @@
 
       <div id="tokenListContainer" aria-hidden="true">
         <table>
-          <thead><tr><th>Address</th><th>Balance</th></tr></thead>
+          <thead><tr><th>Address</th><th>Balance</th><tr></thead>
           <tbody id="tokenListContent"></tbody>
         </table>
       </div>
@@ -221,6 +221,20 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
+    // ============================================ //
+    // MANIFOLD CONFIGURATION - IEVADIET SAVU ADRESI
+    // ============================================ //
+    // 🔧 AIZSTĀJIET AR SAVU MANIFOLD KONTRAKTA ADRESI!
+    const MANIFOLD_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
+    // Piemērs: "0x1234567890123456789012345678901234567890"
+    
+    // Manifold standarta mint funkcija
+    const MANIFOLD_ABI = [
+      "function mint(address to, uint256 tokenId, string memory uri) external payable",
+      "function mintWithETH(address to, uint256 tokenId, string memory uri) external payable",
+      "function purchase(uint256 tokenId, string memory uri) external payable"
+    ];
+
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
     const ctx = canvas.getContext('2d');
@@ -301,7 +315,6 @@
     }
     function seededRandomFloat(seedStr) { return hashStringToInt(seedStr, 10000) / 10000; }
 
-    // TABULA - NFT rāda tikai skaitu
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
         tokenListContent.innerHTML = '<tr><td colspan="2" style="color:#777;">No assets<\/td><\/tr>'; 
@@ -468,26 +481,76 @@
       return { ipfs: data.ipfs, http: data.http, cid: data.cid };
     }
 
+    // ============================================ //
+    // MANIFOLD MINT FUNCTION
+    // ============================================ //
+    async function mintOnManifold(metadataURI) {
+      // Ģenerē nejaušu token ID
+      const tokenId = Math.floor(Math.random() * 1000000);
+      
+      // Mēģina dažādas Manifold mint funkcijas
+      const contract = new ethers.Contract(MANIFOLD_CONTRACT_ADDRESS, MANIFOLD_ABI, signer);
+      
+      // Mēģina standarta mint
+      try {
+        const tx = await contract.mint(account, tokenId, metadataURI, {
+          value: ethers.parseEther("0.01"),
+          gasLimit: 300000
+        });
+        return await tx.wait();
+      } catch (e) {
+        console.log('Standard mint failed, trying mintWithETH...', e.message);
+        try {
+          const tx = await contract.mintWithETH(account, tokenId, metadataURI, {
+            value: ethers.parseEther("0.01"),
+            gasLimit: 300000
+          });
+          return await tx.wait();
+        } catch (e2) {
+          console.log('mintWithETH failed, trying purchase...', e2.message);
+          try {
+            const tx = await contract.purchase(tokenId, metadataURI, {
+              value: ethers.parseEther("0.01"),
+              gasLimit: 300000
+            });
+            return await tx.wait();
+          } catch (e3) {
+            throw new Error(`All mint methods failed: ${e3.message}`);
+          }
+        }
+      }
+    }
+
     async function generateNFT() {
       if (!account || !provider || !signer) {
         statusMsg.textContent = 'Connect wallet first';
         return;
       }
-      const userConfirmed = confirm(`Generate NFT from visualization?\n\nCost: 0.01 ETH + gas\n\nProceed?`);
+      
+      // Pārbauda vai Manifold kontrakta adrese ir ievadīta
+      if (MANIFOLD_CONTRACT_ADDRESS === "0x0000000000000000000000000000000000000000") {
+        statusMsg.textContent = 'Please configure Manifold contract address first!';
+        alert('Manifold contract address not configured!\n\nPlease edit the code and add your Manifold contract address.');
+        return;
+      }
+      
+      const userConfirmed = confirm(`Create NFT on Manifold from your visualization?\n\nFee: 0.01 ETH + gas\n\nDo you want to continue?`);
       if (!userConfirmed) { statusMsg.textContent = 'Cancelled'; return; }
 
       setButtonLoading(generateNFTBtn, true);
       showProgressSmooth();
       try {
         const imageResult = await uploadImageToIPFS(canvas);
-        statusMsg.textContent = 'Image uploaded';
+        statusMsg.textContent = 'Image uploaded to IPFS';
         lastImageURL = imageResult;
+        
         let videoResult = null;
         try {
           videoResult = await uploadVideoToIPFS(canvas, 5000);
-          statusMsg.textContent = 'Video uploaded';
+          statusMsg.textContent = 'Video uploaded to IPFS';
           lastVideoURL = videoResult;
         } catch (error) { console.warn('Video upload failed:', error); }
+        
         const metadata = {
           name: "Wallet Visualization NFT",
           description: `Generated from wallet ${account.substring(0, 10)}... on ${new Date().toISOString()}`,
@@ -496,38 +559,48 @@
             { trait_type: "ETH Balance", value: ethBalance.toString() },
             { trait_type: "Token Count", value: tokens.length.toString() },
             { trait_type: "Transaction Count", value: txCount.toString() },
+            { trait_type: "Platform", value: "Manifold" },
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
         };
-        if (videoResult) metadata.animation_url = videoResult.ipfs;
+        
+        if (videoResult) {
+          metadata.animation_url = videoResult.ipfs;
+        }
+        
         const metadataResult = await uploadMetadataToIPFS(metadata);
-        statusMsg.textContent = 'Metadata uploaded';
+        statusMsg.textContent = 'Metadata uploaded to IPFS';
         lastMetadataURL = metadataResult;
+        
         showIPFSPreview(imageResult, videoResult, metadataResult);
-        statusMsg.textContent = 'Minting NFT...';
-        const NFT_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
-        const nftABI = ["function mint(address to, string memory uri) external payable"];
-        const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, nftABI, signer);
-        const mintPrice = ethers.parseEther("0.01");
-        const tx = await nftContract.mint(account, metadataResult.ipfs, { value: mintPrice, gasLimit: 500000 });
-        statusMsg.textContent = 'Transaction submitted...';
-        const receipt = await tx.wait();
+        
+        statusMsg.textContent = 'Minting on Manifold...';
+        const receipt = await mintOnManifold(metadataResult.ipfs);
+        
         if (receipt.status === 1) {
-          statusMsg.textContent = 'NFT minted successfully!';
-          alert(`NFT Created!\n\nMetadata: ${metadataResult.ipfs}\nView: ${metadataResult.http}\nImage: ${imageResult.http}\nVideo: ${videoResult ? videoResult.http : 'N/A'}\nTx: ${receipt.hash}`);
+          statusMsg.textContent = 'NFT minted successfully on Manifold!';
+          alert(`✅ NFT Created on Manifold!\n\nMetadata: ${metadataResult.ipfs}\nView: ${metadataResult.http}\nImage: ${imageResult.http}\nVideo: ${videoResult ? videoResult.http : 'N/A'}\nTransaction: ${receipt.hash}`);
+        } else {
+          throw new Error('Transaction failed');
         }
       } catch (error) {
         console.error(error);
-        if (error.code === 'ACTION_REJECTED') statusMsg.textContent = 'Transaction rejected';
-        else statusMsg.textContent = `Error: ${error.message.substring(0, 100)}`;
-        alert('NFT generation failed: ' + error.message);
+        if (error.code === 'ACTION_REJECTED') {
+          statusMsg.textContent = 'Transaction rejected';
+          alert('You rejected the transaction');
+        } else if (error.message.includes('insufficient funds')) {
+          statusMsg.textContent = 'Insufficient ETH balance';
+          alert(`Insufficient funds!\nYou need at least 0.01 ETH + gas fees.`);
+        } else {
+          statusMsg.textContent = `Error: ${error.message.substring(0, 100)}`;
+          alert(`NFT generation failed: ${error.message}`);
+        }
       } finally {
         setButtonLoading(generateNFTBtn, false);
         hideProgressSmooth();
       }
     }
 
-    // ORIĢINĀLAIS DAĻIŅU IZMĒRS - bez izmaiņām
     async function initParticlesOnce() {
       initialParticles = [];
       const particleCount = Math.min(150, 50 + (tokens.length || 0) * 15);
@@ -547,7 +620,6 @@
     }
     function cloneParticles() { return initialParticles.map(p => ({ ...p })); }
 
-    // ORIĢINĀLĀ ZĪMĒŠANA - bez mirdzuma efekta
     function drawFrame(frame, showTokensFrame) {
       const dpr = window.devicePixelRatio || 1;
       const scale = isMobile ? 0.6 : 1;
