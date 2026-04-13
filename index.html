@@ -52,6 +52,15 @@
     }
     .generate-nft-btn.loading::after { border-top-color: #000; }
     
+    /* Theme button */
+    .theme-btn {
+      background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+      color: #fff;
+    }
+    .theme-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+    }
+    
     .snapshot-container { width:100%; background:#000; border-radius:14px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.6); position:relative; }
     #snapshotCanvas { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.03); display:block; margin-bottom:12px; }
     #recordTimer { margin-top:6px; color:#0ff; font-weight:600; font-size:16px; text-align:center; }
@@ -110,6 +119,20 @@
     .header-text {
       text-align: center;
       padding-top: 5px;
+    }
+    
+    /* Theme indicator */
+    .theme-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.6);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 100;
+      pointer-events: none;
     }
     
     @media (max-width: 768px) {
@@ -187,6 +210,7 @@
       <button id="renderBtn" disabled>Render Snapshot</button>
       <button id="recordBtn" disabled>Record 20s HD Video</button>
       <button id="generateNFTBtn" class="generate-nft-btn" disabled>Generate NFT</button>
+      <button id="themeBtn" class="theme-btn">🎨 Change Theme</button>
     </section>
 
     <div id="accountDisplay" aria-live="polite">Connected account: —</div>
@@ -204,7 +228,7 @@
 
       <div id="tokenListContainer" aria-hidden="true">
         <table>
-          <thead><tr><th>Address</th><th>Balance</th><tr></thead>
+          <thead><tr><th>Address</th><th>Balance</th></tr></thead>
           <tbody id="tokenListContent"></tbody>
         </table>
       </div>
@@ -217,23 +241,116 @@
     <span id="previewVideo"></span><br>
     <span id="previewMetadata"></span>
   </div>
+  
+  <div id="themeIndicator" class="theme-indicator">Theme: Original</div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
     // ============================================ //
-    // MANIFOLD CONFIGURATION - IEVADIET SAVU ADRESI
+    // MANIFOLD CONFIGURATION
     // ============================================ //
-    // 🔧 AIZSTĀJIET AR SAVU MANIFOLD KONTRAKTA ADRESI!
     const MANIFOLD_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
-    // Piemērs: "0x1234567890123456789012345678901234567890"
-    
-    // Manifold standarta mint funkcija
     const MANIFOLD_ABI = [
       "function mint(address to, uint256 tokenId, string memory uri) external payable",
       "function mintWithETH(address to, uint256 tokenId, string memory uri) external payable",
       "function purchase(uint256 tokenId, string memory uri) external payable"
     ];
+
+    // ============================================ //
+    // VISUALIZATION THEMES
+    // ============================================ //
+    const THEMES = {
+      original: {
+        name: "Original",
+        bgStart: "#000000",
+        bgEnd: "#000000",
+        particleSat: "100%",
+        particleLight: "70%",
+        lineSat: "100%",
+        lineLight: "70%",
+        glowSat: "100%",
+        glowLight: "60%",
+        accentColor: "#0ff"
+      },
+      cosmic: {
+        name: "Cosmic",
+        bgStart: "#0a0015",
+        bgEnd: "#15002a",
+        particleSat: "90%",
+        particleLight: "65%",
+        lineSat: "85%",
+        lineLight: "60%",
+        glowSat: "95%",
+        glowLight: "55%",
+        accentColor: "#b266ff"
+      },
+      fire: {
+        name: "Fire",
+        bgStart: "#1a0000",
+        bgEnd: "#3d0000",
+        particleSat: "95%",
+        particleLight: "60%",
+        lineSat: "90%",
+        lineLight: "55%",
+        glowSat: "100%",
+        glowLight: "50%",
+        accentColor: "#ff6600"
+      },
+      ice: {
+        name: "Ice",
+        bgStart: "#001020",
+        bgEnd: "#001a33",
+        particleSat: "80%",
+        particleLight: "75%",
+        lineSat: "75%",
+        lineLight: "70%",
+        glowSat: "85%",
+        glowLight: "65%",
+        accentColor: "#00ccff"
+      },
+      neon: {
+        name: "Neon",
+        bgStart: "#000000",
+        bgEnd: "#0a0a0a",
+        particleSat: "100%",
+        particleLight: "75%",
+        lineSat: "100%",
+        lineLight: "70%",
+        glowSat: "100%",
+        glowLight: "65%",
+        accentColor: "#00ff88"
+      },
+      monochrome: {
+        name: "Monochrome",
+        bgStart: "#111111",
+        bgEnd: "#222222",
+        particleSat: "0%",
+        particleLight: "65%",
+        lineSat: "0%",
+        lineLight: "55%",
+        glowSat: "0%",
+        glowLight: "50%",
+        accentColor: "#888888"
+      }
+    };
+    
+    let currentTheme = "original";
+    
+    function getThemeColors(themeName, hue) {
+      const theme = THEMES[themeName] || THEMES.original;
+      return {
+        strokeStyle: `hsla(${hue}, ${theme.lineSat}, ${theme.lineLight}, ${alpha})`,
+        particleGradients: [
+          `hsla(${hue}, ${theme.particleSat}, ${theme.particleLight}, 1)`,
+          `hsla(${hue + 20}, ${theme.particleSat}, ${Number(theme.particleLight) - 10}%, 0.9)`,
+          `hsla(${hue + 40}, ${theme.particleSat}, ${Number(theme.particleLight) - 30}%, 0.5)`
+        ],
+        glowColor: `hsla(${hue}, ${theme.glowSat}, ${theme.glowLight}, 0.4)`,
+        bgGradient: [theme.bgStart, theme.bgEnd],
+        accentColor: theme.accentColor
+      };
+    }
 
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
@@ -261,6 +378,8 @@
     const renderBtn = document.getElementById('renderBtn');
     const recordBtn = document.getElementById('recordBtn');
     const generateNFTBtn = document.getElementById('generateNFTBtn');
+    const themeBtn = document.getElementById('themeBtn');
+    const themeIndicator = document.getElementById('themeIndicator');
     const accountDisplay = document.getElementById('accountDisplay');
     const recordTimer = document.getElementById('recordTimer');
     const statusMsg = document.getElementById('statusMsg');
@@ -314,6 +433,20 @@
       return h % mod; 
     }
     function seededRandomFloat(seedStr) { return hashStringToInt(seedStr, 10000) / 10000; }
+
+    function changeTheme() {
+      const themeNames = Object.keys(THEMES);
+      const currentIndex = themeNames.indexOf(currentTheme);
+      const nextIndex = (currentIndex + 1) % themeNames.length;
+      currentTheme = themeNames[nextIndex];
+      themeIndicator.textContent = `Theme: ${THEMES[currentTheme].name}`;
+      statusMsg.textContent = `Theme changed to ${THEMES[currentTheme].name}`;
+      
+      // Restart animation with new theme
+      if (particles.length > 0) {
+        particles = cloneParticles();
+      }
+    }
 
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
@@ -481,17 +614,10 @@
       return { ipfs: data.ipfs, http: data.http, cid: data.cid };
     }
 
-    // ============================================ //
-    // MANIFOLD MINT FUNCTION
-    // ============================================ //
     async function mintOnManifold(metadataURI) {
-      // Ģenerē nejaušu token ID
       const tokenId = Math.floor(Math.random() * 1000000);
-      
-      // Mēģina dažādas Manifold mint funkcijas
       const contract = new ethers.Contract(MANIFOLD_CONTRACT_ADDRESS, MANIFOLD_ABI, signer);
       
-      // Mēģina standarta mint
       try {
         const tx = await contract.mint(account, tokenId, metadataURI, {
           value: ethers.parseEther("0.01"),
@@ -499,7 +625,6 @@
         });
         return await tx.wait();
       } catch (e) {
-        console.log('Standard mint failed, trying mintWithETH...', e.message);
         try {
           const tx = await contract.mintWithETH(account, tokenId, metadataURI, {
             value: ethers.parseEther("0.01"),
@@ -507,7 +632,6 @@
           });
           return await tx.wait();
         } catch (e2) {
-          console.log('mintWithETH failed, trying purchase...', e2.message);
           try {
             const tx = await contract.purchase(tokenId, metadataURI, {
               value: ethers.parseEther("0.01"),
@@ -527,7 +651,6 @@
         return;
       }
       
-      // Pārbauda vai Manifold kontrakta adrese ir ievadīta
       if (MANIFOLD_CONTRACT_ADDRESS === "0x0000000000000000000000000000000000000000") {
         statusMsg.textContent = 'Please configure Manifold contract address first!';
         alert('Manifold contract address not configured!\n\nPlease edit the code and add your Manifold contract address.');
@@ -560,6 +683,7 @@
             { trait_type: "Token Count", value: tokens.length.toString() },
             { trait_type: "Transaction Count", value: txCount.toString() },
             { trait_type: "Platform", value: "Manifold" },
+            { trait_type: "Theme", value: THEMES[currentTheme].name },
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
         };
@@ -625,11 +749,20 @@
       const scale = isMobile ? 0.6 : 1;
       const W = canvas.width / (dpr * scale);
       const H = canvas.height / (dpr * scale);
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#000';
+      
+      // Get current theme colors
+      const theme = THEMES[currentTheme];
+      
+      // Draw background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, theme.bgStart);
+      bgGrad.addColorStop(1, theme.bgEnd);
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
+      
       const cx0 = W / 2, cy0 = H / 2;
 
+      // Draw connections between particles
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i], p2 = particles[j];
@@ -641,11 +774,12 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
             const avgBalance = (Math.min(p1.token.balance, 20) + Math.min(p2.token.balance, 20)) / 40;
-            const alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
-            ctx.lineWidth = 1.5 + 2 * avgBalance;
+            let alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
+            if (p1.token.isNFT || p2.token.isNFT) alpha = Math.min(alpha + 0.15, 0.7);
+            ctx.lineWidth = (p1.token.isNFT || p2.token.isNFT) ? 2 : 1.5 + 2 * avgBalance;
             const txFactor = Math.log(txCount + 1) / 10;
             const hue = (p1.hue + p2.hue) / 2 + frame * 0.4 * txFactor;
-            ctx.strokeStyle = `hsla(${hue},100%,70%,${alpha})`;
+            ctx.strokeStyle = `hsla(${hue}, ${theme.lineSat}, ${theme.lineLight}, ${alpha})`;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -654,22 +788,35 @@
         }
       }
 
+      // Draw particles
       particles.forEach(p => {
         p.angle += p.speed;
         const cx = cx0 + Math.cos(p.angle) * p.radius;
         const cy = cy0 + Math.sin(p.angle) * p.radius;
+        
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.r * 2.5);
-        gradient.addColorStop(0, `hsla(${p.hue},100%,70%,1)`);
-        gradient.addColorStop(0.5, `hsla(${p.hue + 20},100%,60%,0.9)`);
-        gradient.addColorStop(1, `hsla(${p.hue + 40},100%,40%,0.5)`);
+        gradient.addColorStop(0, `hsla(${p.hue}, ${theme.particleSat}, ${theme.particleLight}, 1)`);
+        gradient.addColorStop(0.5, `hsla(${p.hue + 20}, ${theme.particleSat}, ${Number(theme.particleLight) - 10}%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${p.hue + 40}, ${theme.particleSat}, ${Number(theme.particleLight) - 30}%, 0.5)`);
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(cx, cy, p.r, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Glow effect for NFTs
+        if (p.token.isNFT) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = `hsla(${p.hue}, ${theme.glowSat}, ${theme.glowLight}, 0.4)`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, p.r + 2, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue}, ${theme.glowSat}, ${theme.glowLight}, 0.2)`;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
       });
 
       if (showTokensFrame && showInfo) {
-        ctx.fillStyle = '#0ff';
+        ctx.fillStyle = theme.accentColor;
         ctx.font = '22px Inter';
         ctx.fillText(`SepoliaETH: ${ethBalance.toFixed(4)}`, 10, 80);
       }
@@ -714,7 +861,7 @@
         if (showInfo) { tokenListContainer.style.display = 'block'; updateTokenListUI(); }
         running = false;
         progressBar.style.transform = 'scaleX(1)';
-        statusMsg.textContent = `Ready - ${tokens.length} assets found`;
+        statusMsg.textContent = `Ready - ${tokens.length} assets found | Theme: ${THEMES[currentTheme].name}`;
         hideProgressSmooth();
         animate();
       } catch (e) {
@@ -827,6 +974,7 @@
     renderBtn.addEventListener('click', renderSnapshot);
     generateNFTBtn.addEventListener('click', generateNFT);
     recordBtn.addEventListener('click', startRecording);
+    themeBtn.addEventListener('click', changeTheme);
     fullscreenIcon.addEventListener('click', () => {
       if (!document.fullscreenElement) canvas.requestFullscreen().catch(() => {});
       else document.exitFullscreen().catch(() => {});
