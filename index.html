@@ -12,6 +12,34 @@
     .container { max-width:1400px; margin:auto; display:flex; flex-direction:column; align-items:center; gap:12px; }
     h1 { font-size:24px; margin:0; line-height:1; background:linear-gradient(90deg,#ffffff,#aaaaaa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; }
     .subtitle { margin-top:4px; color:#9fb0c3; font-size:18px; text-align:center; }
+    
+    /* Theme Selector Styles */
+    .theme-selector {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .theme-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+    }
+    .theme-btn:hover { transform: translateY(-2px) scale(1.05); }
+    .theme-btn.active { background: rgba(255,255,255,0.2); box-shadow: 0 0 10px currentColor; }
+    .theme-cyber { border-color: #0ff; color: #0ff; }
+    .theme-forest { border-color: #0f0; color: #0f0; }
+    .theme-ocean { border-color: #00f; color: #00f; }
+    .theme-sunset { border-color: #ff6600; color: #ff6600; }
+    .theme-galaxy { border-color: #c026ff; color: #c026ff; }
+    
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
     button:disabled { background:#444; cursor:not-allowed; box-shadow:0 6px 18px rgba(0,0,0,0.2); }
@@ -51,15 +79,6 @@
       box-shadow: 0 8px 22px rgba(0,255,204,0.2);
     }
     .generate-nft-btn.loading::after { border-top-color: #000; }
-    
-    /* Theme button */
-    .theme-btn {
-      background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-      color: #fff;
-    }
-    .theme-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
-    }
     
     .snapshot-container { width:100%; background:#000; border-radius:14px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.6); position:relative; }
     #snapshotCanvas { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.03); display:block; margin-bottom:12px; }
@@ -119,20 +138,6 @@
     .header-text {
       text-align: center;
       padding-top: 5px;
-    }
-    
-    /* Theme indicator */
-    .theme-indicator {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(0,0,0,0.6);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-family: monospace;
-      z-index: 100;
-      pointer-events: none;
     }
     
     @media (max-width: 768px) {
@@ -205,12 +210,20 @@
       </div>
     </header>
 
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+      <button class="theme-btn theme-cyber active" data-theme="cyber">🌐 CYBER</button>
+      <button class="theme-btn theme-forest" data-theme="forest">🌲 FOREST</button>
+      <button class="theme-btn theme-ocean" data-theme="ocean">🌊 OCEAN</button>
+      <button class="theme-btn theme-sunset" data-theme="sunset">🌅 SUNSET</button>
+      <button class="theme-btn theme-galaxy" data-theme="galaxy">✨ GALAXY</button>
+    </div>
+
     <section class="controls" aria-label="Controls">
       <button id="connectBtn">Connect Wallet</button>
       <button id="renderBtn" disabled>Render Snapshot</button>
       <button id="recordBtn" disabled>Record 20s HD Video</button>
       <button id="generateNFTBtn" class="generate-nft-btn" disabled>Generate NFT</button>
-      <button id="themeBtn" class="theme-btn">🎨 Change Theme</button>
     </section>
 
     <div id="accountDisplay" aria-live="polite">Connected account: —</div>
@@ -241,16 +254,15 @@
     <span id="previewVideo"></span><br>
     <span id="previewMetadata"></span>
   </div>
-  
-  <div id="themeIndicator" class="theme-indicator">Theme: Original</div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
     // ============================================ //
-    // MANIFOLD CONFIGURATION
+    // MANIFOLD CONFIGURATION - IEVADIET SAVU ADRESI
     // ============================================ //
     const MANIFOLD_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
+    
     const MANIFOLD_ABI = [
       "function mint(address to, uint256 tokenId, string memory uri) external payable",
       "function mintWithETH(address to, uint256 tokenId, string memory uri) external payable",
@@ -261,96 +273,79 @@
     // VISUALIZATION THEMES
     // ============================================ //
     const THEMES = {
-      original: {
-        name: "Original",
-        bgStart: "#000000",
-        bgEnd: "#000000",
-        particleSat: "100%",
-        particleLight: "70%",
-        lineSat: "100%",
-        lineLight: "70%",
-        glowSat: "100%",
-        glowLight: "60%",
-        accentColor: "#0ff"
+      cyber: {
+        name: 'Cyber',
+        bgStart: '#000000',
+        bgEnd: '#001a33',
+        particleHueBase: 200,
+        particleHueRange: 160,
+        glowColor: '#0ff',
+        connectionAlpha: 0.4,
+        particleMinSat: 70,
+        particleMaxSat: 100,
+        particleMinLight: 50,
+        particleMaxLight: 80,
+        textColor: '#0ff'
       },
-      cosmic: {
-        name: "Cosmic",
-        bgStart: "#0a0015",
-        bgEnd: "#15002a",
-        particleSat: "90%",
-        particleLight: "65%",
-        lineSat: "85%",
-        lineLight: "60%",
-        glowSat: "95%",
-        glowLight: "55%",
-        accentColor: "#b266ff"
+      forest: {
+        name: 'Forest',
+        bgStart: '#0a1a0a',
+        bgEnd: '#001a00',
+        particleHueBase: 120,
+        particleHueRange: 80,
+        glowColor: '#0f0',
+        connectionAlpha: 0.35,
+        particleMinSat: 70,
+        particleMaxSat: 95,
+        particleMinLight: 45,
+        particleMaxLight: 75,
+        textColor: '#2ecc71'
       },
-      fire: {
-        name: "Fire",
-        bgStart: "#1a0000",
-        bgEnd: "#3d0000",
-        particleSat: "95%",
-        particleLight: "60%",
-        lineSat: "90%",
-        lineLight: "55%",
-        glowSat: "100%",
-        glowLight: "50%",
-        accentColor: "#ff6600"
+      ocean: {
+        name: 'Ocean',
+        bgStart: '#0a0a2a',
+        bgEnd: '#001a3a',
+        particleHueBase: 240,
+        particleHueRange: 60,
+        glowColor: '#4488ff',
+        connectionAlpha: 0.4,
+        particleMinSat: 65,
+        particleMaxSat: 90,
+        particleMinLight: 45,
+        particleMaxLight: 75,
+        textColor: '#3498db'
       },
-      ice: {
-        name: "Ice",
-        bgStart: "#001020",
-        bgEnd: "#001a33",
-        particleSat: "80%",
-        particleLight: "75%",
-        lineSat: "75%",
-        lineLight: "70%",
-        glowSat: "85%",
-        glowLight: "65%",
-        accentColor: "#00ccff"
+      sunset: {
+        name: 'Sunset',
+        bgStart: '#2a0a0a',
+        bgEnd: '#2a1a00',
+        particleHueBase: 30,
+        particleHueRange: 60,
+        glowColor: '#ff8844',
+        connectionAlpha: 0.45,
+        particleMinSat: 75,
+        particleMaxSat: 100,
+        particleMinLight: 55,
+        particleMaxLight: 85,
+        textColor: '#ff8844'
       },
-      neon: {
-        name: "Neon",
-        bgStart: "#000000",
-        bgEnd: "#0a0a0a",
-        particleSat: "100%",
-        particleLight: "75%",
-        lineSat: "100%",
-        lineLight: "70%",
-        glowSat: "100%",
-        glowLight: "65%",
-        accentColor: "#00ff88"
-      },
-      monochrome: {
-        name: "Monochrome",
-        bgStart: "#111111",
-        bgEnd: "#222222",
-        particleSat: "0%",
-        particleLight: "65%",
-        lineSat: "0%",
-        lineLight: "55%",
-        glowSat: "0%",
-        glowLight: "50%",
-        accentColor: "#888888"
+      galaxy: {
+        name: 'Galaxy',
+        bgStart: '#1a0a2a',
+        bgEnd: '#0a0a2a',
+        particleHueBase: 280,
+        particleHueRange: 100,
+        glowColor: '#c026ff',
+        connectionAlpha: 0.4,
+        particleMinSat: 75,
+        particleMaxSat: 100,
+        particleMinLight: 55,
+        particleMaxLight: 80,
+        textColor: '#c026ff'
       }
     };
     
-    let currentTheme = "original";
-    
-    function getThemeColors(themeName, hue) {
-      const theme = THEMES[themeName] || THEMES.original;
-      return {
-        strokeStyle: `hsla(${hue}, ${theme.lineSat}, ${theme.lineLight}, ${alpha})`,
-        particleGradients: [
-          `hsla(${hue}, ${theme.particleSat}, ${theme.particleLight}, 1)`,
-          `hsla(${hue + 20}, ${theme.particleSat}, ${Number(theme.particleLight) - 10}%, 0.9)`,
-          `hsla(${hue + 40}, ${theme.particleSat}, ${Number(theme.particleLight) - 30}%, 0.5)`
-        ],
-        glowColor: `hsla(${hue}, ${theme.glowSat}, ${theme.glowLight}, 0.4)`,
-        bgGradient: [theme.bgStart, theme.bgEnd],
-        accentColor: theme.accentColor
-      };
-    }
+    let currentTheme = 'cyber';
 
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
@@ -378,8 +373,6 @@
     const renderBtn = document.getElementById('renderBtn');
     const recordBtn = document.getElementById('recordBtn');
     const generateNFTBtn = document.getElementById('generateNFTBtn');
-    const themeBtn = document.getElementById('themeBtn');
-    const themeIndicator = document.getElementById('themeIndicator');
     const accountDisplay = document.getElementById('accountDisplay');
     const recordTimer = document.getElementById('recordTimer');
     const statusMsg = document.getElementById('statusMsg');
@@ -393,6 +386,52 @@
     const previewImage = document.getElementById('previewImage');
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
+
+    // Theme switching
+    function setTheme(themeName) {
+      currentTheme = themeName;
+      document.body.style.background = `linear-gradient(135deg, ${THEMES[themeName].bgStart}, ${THEMES[themeName].bgEnd})`;
+      
+      // Update UI elements that depend on theme
+      const theme = THEMES[currentTheme];
+      document.getElementById('recordTimer').style.color = theme.textColor;
+      document.getElementById('fullscreenIcon').style.color = theme.textColor;
+      document.getElementById('toggleInfoIcon').style.color = theme.textColor;
+      
+      // Update token list header color
+      const thElements = document.querySelectorAll('#tokenListContainer th');
+      thElements.forEach(th => th.style.color = theme.textColor);
+      
+      // Reinitialize particles with new theme colors if they exist
+      if (initialParticles.length > 0) {
+        updateParticleColors();
+        if (animRequest) {
+          stopAnimation();
+          particles = cloneParticles();
+          animate();
+        }
+      }
+    }
+    
+    function updateParticleColors() {
+      const theme = THEMES[currentTheme];
+      const seedBase = (account || '') + String(ethBalance) + String(txCount);
+      particles.forEach((p, idx) => {
+        const balanceFactor = p.token.isNFT ? 1 : Math.min(p.token.balance || 0, 20) / 20;
+        const hueVariation = hashStringToInt((p.token.address || '') + seedBase + idx, theme.particleHueRange);
+        p.hue = (theme.particleHueBase + hueVariation) % 360;
+      });
+    }
+    
+    // Theme button event listeners
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const theme = btn.getAttribute('data-theme');
+        setTheme(theme);
+      });
+    });
 
     function showProgressSmooth() { 
       progressBarContainer.style.display = 'block'; 
@@ -433,20 +472,6 @@
       return h % mod; 
     }
     function seededRandomFloat(seedStr) { return hashStringToInt(seedStr, 10000) / 10000; }
-
-    function changeTheme() {
-      const themeNames = Object.keys(THEMES);
-      const currentIndex = themeNames.indexOf(currentTheme);
-      const nextIndex = (currentIndex + 1) % themeNames.length;
-      currentTheme = themeNames[nextIndex];
-      themeIndicator.textContent = `Theme: ${THEMES[currentTheme].name}`;
-      statusMsg.textContent = `Theme changed to ${THEMES[currentTheme].name}`;
-      
-      // Restart animation with new theme
-      if (particles.length > 0) {
-        particles = cloneParticles();
-      }
-    }
 
     function updateTokenListUI() {
       if(!tokens || tokens.length === 0){ 
@@ -625,6 +650,7 @@
         });
         return await tx.wait();
       } catch (e) {
+        console.log('Standard mint failed, trying mintWithETH...', e.message);
         try {
           const tx = await contract.mintWithETH(account, tokenId, metadataURI, {
             value: ethers.parseEther("0.01"),
@@ -632,6 +658,7 @@
           });
           return await tx.wait();
         } catch (e2) {
+          console.log('mintWithETH failed, trying purchase...', e2.message);
           try {
             const tx = await contract.purchase(tokenId, metadataURI, {
               value: ethers.parseEther("0.01"),
@@ -729,12 +756,15 @@
       initialParticles = [];
       const particleCount = Math.min(150, 50 + (tokens.length || 0) * 15);
       const seedBase = (account || '') + String(ethBalance) + String(txCount);
+      const theme = THEMES[currentTheme];
+      
       for (let i = 0; i < particleCount; i++) {
         const t = tokens.length ? tokens[i % tokens.length] : { balance: 1, address: String(i), symbol: 'T' };
         const balanceFactor = t.isNFT ? 1 : Math.min(t.balance || 0, 20) / 20;
-        let hue = hashStringToInt((t.address || '') + seedBase + i) % 360;
+        const hueVariation = hashStringToInt((t.address || '') + seedBase + i, theme.particleHueRange);
+        let hue = (theme.particleHueBase + hueVariation) % 360;
         const ethFactor = Math.min(ethBalance / 10, 1);
-        hue = (hue + ethFactor * 100) % 360;
+        hue = (hue + ethFactor * 60) % 360;
         const speed = 0.005 + 0.01 * (hashStringToInt((t.symbol || t.address) + seedBase + i, 10) / 10);
         const r = t.isNFT ? 10 : 2 + 6 * balanceFactor;
         const angle = seededRandomFloat(seedBase + i + 'angle') * 2 * Math.PI;
@@ -745,24 +775,22 @@
     function cloneParticles() { return initialParticles.map(p => ({ ...p })); }
 
     function drawFrame(frame, showTokensFrame) {
+      const theme = THEMES[currentTheme];
       const dpr = window.devicePixelRatio || 1;
       const scale = isMobile ? 0.6 : 1;
       const W = canvas.width / (dpr * scale);
       const H = canvas.height / (dpr * scale);
       
-      // Get current theme colors
-      const theme = THEMES[currentTheme];
-      
-      // Draw background gradient
-      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-      bgGrad.addColorStop(0, theme.bgStart);
-      bgGrad.addColorStop(1, theme.bgEnd);
-      ctx.fillStyle = bgGrad;
+      // Background with theme colors
+      const gradient = ctx.createLinearGradient(0, 0, W, H);
+      gradient.addColorStop(0, theme.bgStart);
+      gradient.addColorStop(1, theme.bgEnd);
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, W, H);
       
       const cx0 = W / 2, cy0 = H / 2;
 
-      // Draw connections between particles
+      // Draw connections with theme colors
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i], p2 = particles[j];
@@ -774,12 +802,13 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
             const avgBalance = (Math.min(p1.token.balance, 20) + Math.min(p2.token.balance, 20)) / 40;
-            let alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
-            if (p1.token.isNFT || p2.token.isNFT) alpha = Math.min(alpha + 0.15, 0.7);
-            ctx.lineWidth = (p1.token.isNFT || p2.token.isNFT) ? 2 : 1.5 + 2 * avgBalance;
+            const alpha = theme.connectionAlpha * avgBalance * (1 - dist / 200);
+            ctx.lineWidth = 1.5 + 2 * avgBalance;
             const txFactor = Math.log(txCount + 1) / 10;
             const hue = (p1.hue + p2.hue) / 2 + frame * 0.4 * txFactor;
-            ctx.strokeStyle = `hsla(${hue}, ${theme.lineSat}, ${theme.lineLight}, ${alpha})`;
+            const sat = theme.particleMinSat + (theme.particleMaxSat - theme.particleMinSat) * avgBalance;
+            const light = theme.particleMinLight + (theme.particleMaxLight - theme.particleMinLight) * avgBalance;
+            ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -788,37 +817,39 @@
         }
       }
 
-      // Draw particles
+      // Draw particles with theme colors
       particles.forEach(p => {
         p.angle += p.speed;
         const cx = cx0 + Math.cos(p.angle) * p.radius;
         const cy = cy0 + Math.sin(p.angle) * p.radius;
+        const balanceFactor = p.token.isNFT ? 1 : Math.min(p.token.balance || 0, 20) / 20;
+        const sat = theme.particleMinSat + (theme.particleMaxSat - theme.particleMinSat) * balanceFactor;
+        const light = theme.particleMinLight + (theme.particleMaxLight - theme.particleMinLight) * balanceFactor;
         
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.r * 2.5);
-        gradient.addColorStop(0, `hsla(${p.hue}, ${theme.particleSat}, ${theme.particleLight}, 1)`);
-        gradient.addColorStop(0.5, `hsla(${p.hue + 20}, ${theme.particleSat}, ${Number(theme.particleLight) - 10}%, 0.9)`);
-        gradient.addColorStop(1, `hsla(${p.hue + 40}, ${theme.particleSat}, ${Number(theme.particleLight) - 30}%, 0.5)`);
+        gradient.addColorStop(0, `hsla(${p.hue}, ${sat}%, ${light + 10}%, 1)`);
+        gradient.addColorStop(0.5, `hsla(${p.hue}, ${sat}%, ${light}%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${p.hue + 20}, ${sat}%, ${light - 20}%, 0.5)`);
         ctx.fillStyle = gradient;
+        
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = theme.glowColor;
         ctx.beginPath();
         ctx.arc(cx, cy, p.r, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Glow effect for NFTs
-        if (p.token.isNFT) {
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = `hsla(${p.hue}, ${theme.glowSat}, ${theme.glowLight}, 0.4)`;
-          ctx.beginPath();
-          ctx.arc(cx, cy, p.r + 2, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${p.hue}, ${theme.glowSat}, ${theme.glowLight}, 0.2)`;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
+        ctx.shadowBlur = 0;
       });
 
+      // Draw info text with theme color
       if (showTokensFrame && showInfo) {
-        ctx.fillStyle = theme.accentColor;
+        ctx.fillStyle = theme.textColor;
         ctx.font = '22px Inter';
-        ctx.fillText(`SepoliaETH: ${ethBalance.toFixed(4)}`, 10, 80);
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = theme.glowColor;
+        ctx.fillText(`ETH: ${ethBalance.toFixed(4)}`, 20, 70);
+        ctx.fillText(`Assets: ${tokens.length}`, 20, 105);
+        ctx.fillText(`Theme: ${theme.name}`, 20, 140);
+        ctx.shadowBlur = 0;
       }
     }
 
@@ -861,7 +892,7 @@
         if (showInfo) { tokenListContainer.style.display = 'block'; updateTokenListUI(); }
         running = false;
         progressBar.style.transform = 'scaleX(1)';
-        statusMsg.textContent = `Ready - ${tokens.length} assets found | Theme: ${THEMES[currentTheme].name}`;
+        statusMsg.textContent = `Ready - ${tokens.length} assets found`;
         hideProgressSmooth();
         animate();
       } catch (e) {
@@ -974,7 +1005,6 @@
     renderBtn.addEventListener('click', renderSnapshot);
     generateNFTBtn.addEventListener('click', generateNFT);
     recordBtn.addEventListener('click', startRecording);
-    themeBtn.addEventListener('click', changeTheme);
     fullscreenIcon.addEventListener('click', () => {
       if (!document.fullscreenElement) canvas.requestFullscreen().catch(() => {});
       else document.exitFullscreen().catch(() => {});
