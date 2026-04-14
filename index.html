@@ -31,9 +31,18 @@
       transition: all 0.2s ease;
       background: rgba(0,0,0,0.6);
       backdrop-filter: blur(4px);
+      position: relative;
     }
     .theme-btn:hover { transform: translateY(-2px) scale(1.05); }
-    .theme-btn.active { background: rgba(255,255,255,0.2); box-shadow: 0 0 10px currentColor; }
+    .theme-btn.active { 
+      background: rgba(255,255,255,0.2); 
+      box-shadow: 0 0 15px currentColor;
+      transform: scale(1.02);
+    }
+    .theme-btn.active::before {
+      content: '✓ ';
+      font-weight: bold;
+    }
     .theme-classic { border-color: #0ff; color: #0ff; }
     .theme-forest { border-color: #0f0; color: #0f0; }
     .theme-ocean { border-color: #00f; color: #00f; }
@@ -41,6 +50,24 @@
     .theme-galaxy { border-color: #c026ff; color: #c026ff; }
     .theme-rainbow { border-color: #ff00ff; color: #ff00ff; }
     .theme-fire { border-color: #ff4400; color: #ff4400; }
+    
+    /* Active style indicator */
+    .active-style-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 100;
+      border-left: 4px solid;
+      pointer-events: none;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
     
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
@@ -212,15 +239,15 @@
       </div>
     </header>
 
-    <!-- Theme Selector - CLASSIC ir pamata, pārējie papildina -->
+    <!-- Theme Selector -->
     <div class="theme-selector">
-      <button class="theme-btn theme-classic active" data-theme="classic">⭐ CLASSIC</button>
-      <button class="theme-btn theme-forest" data-theme="forest">🌲 FOREST (glow)</button>
-      <button class="theme-btn theme-ocean" data-theme="ocean">🌊 OCEAN (waves)</button>
-      <button class="theme-btn theme-sunset" data-theme="sunset">🌅 SUNSET (fire)</button>
-      <button class="theme-btn theme-galaxy" data-theme="galaxy">✨ GALAXY (sparkle)</button>
-      <button class="theme-btn theme-rainbow" data-theme="rainbow">🌈 RAINBOW (pulse)</button>
-      <button class="theme-btn theme-fire" data-theme="fire">🔥 FIRE (trails)</button>
+      <button class="theme-btn theme-classic active" data-theme="classic" data-style="⭐ CLASSIC">⭐ CLASSIC</button>
+      <button class="theme-btn theme-forest" data-theme="forest" data-style="🌲 FOREST (glow)">🌲 FOREST</button>
+      <button class="theme-btn theme-ocean" data-theme="ocean" data-style="🌊 OCEAN (waves)">🌊 OCEAN</button>
+      <button class="theme-btn theme-sunset" data-theme="sunset" data-style="🌅 SUNSET (fire)">🌅 SUNSET</button>
+      <button class="theme-btn theme-galaxy" data-theme="galaxy" data-style="✨ GALAXY (sparkle)">✨ GALAXY</button>
+      <button class="theme-btn theme-rainbow" data-theme="rainbow" data-style="🌈 RAINBOW (pulse)">🌈 RAINBOW</button>
+      <button class="theme-btn theme-fire" data-theme="fire" data-style="🔥 FIRE (trails)">🔥 FIRE</button>
     </div>
 
     <section class="controls" aria-label="Controls">
@@ -259,6 +286,11 @@
     <span id="previewMetadata"></span>
   </div>
 
+  <!-- Active style indicator -->
+  <div id="styleIndicator" class="active-style-indicator" style="border-left-color: #0ff;">
+    <span id="indicatorText">⭐ CLASSIC ACTIVE</span>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
   <script>
@@ -278,29 +310,32 @@
     // ============================================ //
     const ADDON_STYLES = {
       classic: {
-        name: 'Classic',
-        // Nav papildu efektu - tikai oriģinālais stils
+        name: 'CLASSIC',
+        displayName: '⭐ CLASSIC',
+        color: '#0ff',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({ hue, sat, light }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {},
-        connectionColorModifier: (hue, sat, light, alpha) => ({ hue, sat, light, alpha })
+        connectionColorModifier: (hue, sat, light, alpha) => ({ hue, sat, light, alpha }),
+        indicatorText: '⭐ CLASSIC MODE - Original visualization'
       },
       forest: {
-        name: 'Forest',
+        name: 'FOREST',
+        displayName: '🌲 FOREST',
+        color: '#0f0',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + 120) % 360,
           sat: Math.min(100, sat + 20),
           light: light - 10
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno mirdzuma efektu
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
           particles.forEach(p => {
             const cx = cx0 + Math.cos(p.angle) * p.radius;
             const cy = cy0 + Math.sin(p.angle) * p.radius;
             ctx.beginPath();
-            ctx.arc(cx, cy, p.r * 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 255, 0, 0.1)`;
+            ctx.arc(cx, cy, p.r * 1.8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 255, 0, 0.15)`;
             ctx.fill();
           });
           ctx.restore();
@@ -310,23 +345,25 @@
           sat: Math.min(100, sat + 20),
           light: light - 10,
           alpha: alpha * 0.8
-        })
+        }),
+        indicatorText: '🌲 FOREST MODE - Green glow effect active'
       },
       ocean: {
-        name: 'Ocean',
+        name: 'OCEAN',
+        displayName: '🌊 OCEAN',
+        color: '#00f',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + 200) % 360,
           sat: Math.min(100, sat + 15),
           light: light + 5
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno viļņveida kustību
           ctx.save();
-          ctx.globalAlpha = 0.3;
+          ctx.globalAlpha = 0.25;
           for(let i = 0; i < 5; i++) {
             ctx.beginPath();
             ctx.arc(W/2 + Math.sin(frame * 0.02 + i) * 50, H/2 + Math.cos(frame * 0.015 + i) * 30, 100 + i * 30, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(0, 100, 255, ${0.1 - i * 0.015})`;
+            ctx.strokeStyle = `rgba(0, 100, 255, ${0.15 - i * 0.02})`;
             ctx.stroke();
           }
           ctx.restore();
@@ -336,20 +373,23 @@
           sat: Math.min(100, sat + 15),
           light: light + 5,
           alpha: alpha * 0.9
-        })
+        }),
+        indicatorText: '🌊 OCEAN MODE - Wave animations active'
       },
       sunset: {
-        name: 'Sunset',
+        name: 'SUNSET',
+        displayName: '🌅 SUNSET',
+        color: '#ff6600',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + 30) % 360,
           sat: Math.min(100, sat + 25),
           light: light + 15
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno siltuma mirdzumu
           ctx.save();
-          const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 300);
-          gradient.addColorStop(0, 'rgba(255, 100, 0, 0.15)');
+          const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 350);
+          gradient.addColorStop(0, 'rgba(255, 100, 0, 0.2)');
+          gradient.addColorStop(0.5, 'rgba(255, 50, 0, 0.1)');
           gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, W, H);
@@ -360,24 +400,26 @@
           sat: Math.min(100, sat + 25),
           light: light + 15,
           alpha: alpha * 1.1
-        })
+        }),
+        indicatorText: '🌅 SUNSET MODE - Warm fire glow active'
       },
       galaxy: {
-        name: 'Galaxy',
+        name: 'GALAXY',
+        displayName: '✨ GALAXY',
+        color: '#c026ff',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + 280) % 360,
           sat: Math.min(100, sat + 30),
           light: light + 10
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno zvaigžņu efektu
           ctx.save();
-          for(let i = 0; i < 50; i++) {
+          for(let i = 0; i < 60; i++) {
             const x = (Math.sin(frame * 0.01 + i) * 0.5 + 0.5) * W;
             const y = (Math.cos(frame * 0.008 + i * 2) * 0.5 + 0.5) * H;
             ctx.beginPath();
-            ctx.arc(x, y, 1 + Math.sin(frame * 0.05 + i) * 0.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 200, 255, ${0.3 + Math.sin(frame * 0.03 + i) * 0.2})`;
+            ctx.arc(x, y, 1.5 + Math.sin(frame * 0.05 + i) * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(200, 100, 255, ${0.3 + Math.sin(frame * 0.03 + i) * 0.2})`;
             ctx.fill();
           }
           ctx.restore();
@@ -387,25 +429,27 @@
           sat: Math.min(100, sat + 30),
           light: light + 10,
           alpha: alpha * 0.85
-        })
+        }),
+        indicatorText: '✨ GALAXY MODE - Sparkle stars active'
       },
       rainbow: {
-        name: 'Rainbow',
+        name: 'RAINBOW',
+        displayName: '🌈 RAINBOW',
+        color: '#ff00ff',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + idx * 15 + frameCount * 2) % 360,
           sat: 100,
           light: 70
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno krāsu pulsāciju
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
           particles.forEach((p, i) => {
-            const pulse = Math.sin(frame * 0.05 + i) * 0.3 + 0.5;
+            const pulse = Math.sin(frame * 0.05 + i) * 0.4 + 0.5;
             const cx = cx0 + Math.cos(p.angle) * p.radius;
             const cy = cy0 + Math.sin(p.angle) * p.radius;
             ctx.beginPath();
-            ctx.arc(cx, cy, p.r * (1 + pulse * 0.5), 0, Math.PI * 2);
+            ctx.arc(cx, cy, p.r * (1 + pulse * 0.6), 0, Math.PI * 2);
             ctx.fillStyle = `hsla(${(p.hue + frame) % 360}, 100%, 70%, ${pulse * 0.3})`;
             ctx.fill();
           });
@@ -416,29 +460,31 @@
           sat: 100,
           light: 70,
           alpha: alpha * 0.7
-        })
+        }),
+        indicatorText: '🌈 RAINBOW MODE - Color pulse active'
       },
       fire: {
-        name: 'Fire',
+        name: 'FIRE',
+        displayName: '🔥 FIRE',
+        color: '#ff4400',
         particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
           hue: (hue + 15) % 360,
           sat: Math.min(100, sat + 40),
           light: light + 20
         }),
         drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
-          // Pievieno uguns taku efektu
           ctx.save();
           ctx.globalCompositeOperation = 'screen';
           particles.forEach(p => {
-            const trailX = cx0 + Math.cos(p.angle - p.speed * 10) * p.radius;
-            const trailY = cy0 + Math.sin(p.angle - p.speed * 10) * p.radius;
+            const trailX = cx0 + Math.cos(p.angle - p.speed * 12) * p.radius;
+            const trailY = cy0 + Math.sin(p.angle - p.speed * 12) * p.radius;
             ctx.beginPath();
             ctx.moveTo(trailX, trailY);
             const cx = cx0 + Math.cos(p.angle) * p.radius;
             const cy = cy0 + Math.sin(p.angle) * p.radius;
             ctx.lineTo(cx, cy);
-            ctx.lineWidth = p.r;
-            ctx.strokeStyle = `rgba(255, 80, 0, 0.4)`;
+            ctx.lineWidth = p.r * 1.2;
+            ctx.strokeStyle = `rgba(255, 80, 0, 0.5)`;
             ctx.stroke();
           });
           ctx.restore();
@@ -448,7 +494,8 @@
           sat: Math.min(100, sat + 40),
           light: light + 20,
           alpha: alpha * 1.2
-        })
+        }),
+        indicatorText: '🔥 FIRE MODE - Fire trail effects active'
       }
     };
     
@@ -494,10 +541,24 @@
     const previewImage = document.getElementById('previewImage');
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
+    const styleIndicator = document.getElementById('styleIndicator');
+    const indicatorText = document.getElementById('indicatorText');
 
-    // Stila maiņa - papildina CLASSIC stilu
+    // Stila maiņa ar vizuālu indikatoru
     function setAddonStyle(styleName) {
       currentAddonStyle = styleName;
+      const style = ADDON_STYLES[styleName];
+      
+      // Atjaunot indikatoru
+      styleIndicator.style.borderLeftColor = style.color;
+      indicatorText.innerHTML = style.indicatorText;
+      
+      // Pievienot pagaidu uzplaiksnījuma efektu indikatoram
+      styleIndicator.style.transform = 'scale(1.05)';
+      styleIndicator.style.opacity = '1';
+      setTimeout(() => {
+        styleIndicator.style.transform = 'scale(1)';
+      }, 300);
       
       // Atjaunot daļiņu vizuālos efektus
       if (initialParticles.length > 0) {
@@ -911,10 +972,6 @@
         const cx = cx0 + Math.cos(p.angle) * p.radius;
         const cy = cy0 + Math.sin(p.angle) * p.radius;
         
-        let modifiedHue = p.hue;
-        let modifiedSat = 100;
-        let modifiedLight = 70;
-        
         // Pielieto add-on krāsu modifikāciju
         const modified = addon.particleColorModifier(p.hue, 100, 70, idx, p.balanceFactor);
         
@@ -932,13 +989,17 @@
       // ADD-ON EXTRA EFFECTS
       addon.drawExtraEffects(ctx, W, H, frame, particles, cx0, cy0);
 
-      // CLASSIC INFO TEXT
+      // CLASSIC INFO TEXT ar style indikatoru
       if (showTokensFrame && showInfo) {
         ctx.fillStyle = '#0ff';
         ctx.font = '22px Inter';
         ctx.fillText(`SepoliaETH: ${ethBalance.toFixed(4)}`, 10, 80);
         ctx.font = '16px Inter';
-        ctx.fillText(`Style: ${addon.name}`, 10, 115);
+        ctx.fillStyle = addon.color;
+        ctx.fillText(`${addon.displayName} ACTIVE`, 10, 115);
+        ctx.font = '12px Inter';
+        ctx.fillStyle = '#888';
+        ctx.fillText(addon.indicatorText.split(' - ')[1] || '', 10, 140);
       }
     }
 
