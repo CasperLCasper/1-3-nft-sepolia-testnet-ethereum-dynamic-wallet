@@ -34,12 +34,13 @@
     }
     .theme-btn:hover { transform: translateY(-2px) scale(1.05); }
     .theme-btn.active { background: rgba(255,255,255,0.2); box-shadow: 0 0 10px currentColor; }
-    .theme-cyber { border-color: #0ff; color: #0ff; }
+    .theme-classic { border-color: #0ff; color: #0ff; }
     .theme-forest { border-color: #0f0; color: #0f0; }
     .theme-ocean { border-color: #00f; color: #00f; }
     .theme-sunset { border-color: #ff6600; color: #ff6600; }
     .theme-galaxy { border-color: #c026ff; color: #c026ff; }
     .theme-rainbow { border-color: #ff00ff; color: #ff00ff; }
+    .theme-fire { border-color: #ff4400; color: #ff4400; }
     
     .controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     button { padding:12px 20px; border-radius:12px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a90e2,#9013fe); color:#fff; font-weight:700; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,0.45); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
@@ -211,14 +212,15 @@
       </div>
     </header>
 
-    <!-- Theme Selector - PIEVIENOTĀ TĒMU IZVĒLNE -->
+    <!-- Theme Selector - CLASSIC ir pamata, pārējie papildina -->
     <div class="theme-selector">
-      <button class="theme-btn theme-cyber active" data-theme="cyber">🌐 CYBER</button>
-      <button class="theme-btn theme-forest" data-theme="forest">🌲 FOREST</button>
-      <button class="theme-btn theme-ocean" data-theme="ocean">🌊 OCEAN</button>
-      <button class="theme-btn theme-sunset" data-theme="sunset">🌅 SUNSET</button>
-      <button class="theme-btn theme-galaxy" data-theme="galaxy">✨ GALAXY</button>
-      <button class="theme-btn theme-rainbow" data-theme="rainbow">🌈 RAINBOW</button>
+      <button class="theme-btn theme-classic active" data-theme="classic">⭐ CLASSIC</button>
+      <button class="theme-btn theme-forest" data-theme="forest">🌲 FOREST (glow)</button>
+      <button class="theme-btn theme-ocean" data-theme="ocean">🌊 OCEAN (waves)</button>
+      <button class="theme-btn theme-sunset" data-theme="sunset">🌅 SUNSET (fire)</button>
+      <button class="theme-btn theme-galaxy" data-theme="galaxy">✨ GALAXY (sparkle)</button>
+      <button class="theme-btn theme-rainbow" data-theme="rainbow">🌈 RAINBOW (pulse)</button>
+      <button class="theme-btn theme-fire" data-theme="fire">🔥 FIRE (trails)</button>
     </div>
 
     <section class="controls" aria-label="Controls">
@@ -261,7 +263,7 @@
 
   <script>
     // ============================================ //
-    // MANIFOLD CONFIGURATION - IEVADIET SAVU ADRESI
+    // MANIFOLD CONFIGURATION
     // ============================================ //
     const MANIFOLD_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
     
@@ -272,60 +274,186 @@
     ];
 
     // ============================================ //
-    // PARTICLE THEMES - TIKAI DAļIŅU STILI
+    // ADD-ON STYLES (papildina CLASSIC stilu)
     // ============================================ //
-    const PARTICLE_THEMES = {
-      cyber: {
-        name: 'Cyber',
-        hueRange: [180, 220],
-        saturationRange: [70, 100],
-        lightnessRange: [60, 80],
-        connectionHueOffset: 0,
-        particleGlow: true
+    const ADDON_STYLES = {
+      classic: {
+        name: 'Classic',
+        // Nav papildu efektu - tikai oriģinālais stils
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({ hue, sat, light }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {},
+        connectionColorModifier: (hue, sat, light, alpha) => ({ hue, sat, light, alpha })
       },
       forest: {
         name: 'Forest',
-        hueRange: [90, 150],
-        saturationRange: [65, 90],
-        lightnessRange: [50, 70],
-        connectionHueOffset: 0,
-        particleGlow: true
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + 120) % 360,
+          sat: Math.min(100, sat + 20),
+          light: light - 10
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno mirdzuma efektu
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          particles.forEach(p => {
+            const cx = cx0 + Math.cos(p.angle) * p.radius;
+            const cy = cy0 + Math.sin(p.angle) * p.radius;
+            ctx.beginPath();
+            ctx.arc(cx, cy, p.r * 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 255, 0, 0.1)`;
+            ctx.fill();
+          });
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + 120) % 360,
+          sat: Math.min(100, sat + 20),
+          light: light - 10,
+          alpha: alpha * 0.8
+        })
       },
       ocean: {
         name: 'Ocean',
-        hueRange: [200, 260],
-        saturationRange: [60, 85],
-        lightnessRange: [55, 75],
-        connectionHueOffset: 0,
-        particleGlow: true
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + 200) % 360,
+          sat: Math.min(100, sat + 15),
+          light: light + 5
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno viļņveida kustību
+          ctx.save();
+          ctx.globalAlpha = 0.3;
+          for(let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.arc(W/2 + Math.sin(frame * 0.02 + i) * 50, H/2 + Math.cos(frame * 0.015 + i) * 30, 100 + i * 30, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(0, 100, 255, ${0.1 - i * 0.015})`;
+            ctx.stroke();
+          }
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + 200) % 360,
+          sat: Math.min(100, sat + 15),
+          light: light + 5,
+          alpha: alpha * 0.9
+        })
       },
       sunset: {
         name: 'Sunset',
-        hueRange: [20, 60],
-        saturationRange: [75, 100],
-        lightnessRange: [60, 85],
-        connectionHueOffset: 0,
-        particleGlow: true
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + 30) % 360,
+          sat: Math.min(100, sat + 25),
+          light: light + 15
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno siltuma mirdzumu
+          ctx.save();
+          const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 300);
+          gradient.addColorStop(0, 'rgba(255, 100, 0, 0.15)');
+          gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + 30) % 360,
+          sat: Math.min(100, sat + 25),
+          light: light + 15,
+          alpha: alpha * 1.1
+        })
       },
       galaxy: {
         name: 'Galaxy',
-        hueRange: [260, 320],
-        saturationRange: [70, 100],
-        lightnessRange: [55, 80],
-        connectionHueOffset: 0,
-        particleGlow: true
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + 280) % 360,
+          sat: Math.min(100, sat + 30),
+          light: light + 10
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno zvaigžņu efektu
+          ctx.save();
+          for(let i = 0; i < 50; i++) {
+            const x = (Math.sin(frame * 0.01 + i) * 0.5 + 0.5) * W;
+            const y = (Math.cos(frame * 0.008 + i * 2) * 0.5 + 0.5) * H;
+            ctx.beginPath();
+            ctx.arc(x, y, 1 + Math.sin(frame * 0.05 + i) * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 255, ${0.3 + Math.sin(frame * 0.03 + i) * 0.2})`;
+            ctx.fill();
+          }
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + 280) % 360,
+          sat: Math.min(100, sat + 30),
+          light: light + 10,
+          alpha: alpha * 0.85
+        })
       },
       rainbow: {
         name: 'Rainbow',
-        hueRange: [0, 360],
-        saturationRange: [80, 100],
-        lightnessRange: [65, 85],
-        connectionHueOffset: 0,
-        particleGlow: true
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + idx * 15 + frameCount * 2) % 360,
+          sat: 100,
+          light: 70
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno krāsu pulsāciju
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          particles.forEach((p, i) => {
+            const pulse = Math.sin(frame * 0.05 + i) * 0.3 + 0.5;
+            const cx = cx0 + Math.cos(p.angle) * p.radius;
+            const cy = cy0 + Math.sin(p.angle) * p.radius;
+            ctx.beginPath();
+            ctx.arc(cx, cy, p.r * (1 + pulse * 0.5), 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${(p.hue + frame) % 360}, 100%, 70%, ${pulse * 0.3})`;
+            ctx.fill();
+          });
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + frameCount * 2) % 360,
+          sat: 100,
+          light: 70,
+          alpha: alpha * 0.7
+        })
+      },
+      fire: {
+        name: 'Fire',
+        particleColorModifier: (hue, sat, light, idx, balanceFactor) => ({
+          hue: (hue + 15) % 360,
+          sat: Math.min(100, sat + 40),
+          light: light + 20
+        }),
+        drawExtraEffects: (ctx, W, H, frame, particles, cx0, cy0) => {
+          // Pievieno uguns taku efektu
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          particles.forEach(p => {
+            const trailX = cx0 + Math.cos(p.angle - p.speed * 10) * p.radius;
+            const trailY = cy0 + Math.sin(p.angle - p.speed * 10) * p.radius;
+            ctx.beginPath();
+            ctx.moveTo(trailX, trailY);
+            const cx = cx0 + Math.cos(p.angle) * p.radius;
+            const cy = cy0 + Math.sin(p.angle) * p.radius;
+            ctx.lineTo(cx, cy);
+            ctx.lineWidth = p.r;
+            ctx.strokeStyle = `rgba(255, 80, 0, 0.4)`;
+            ctx.stroke();
+          });
+          ctx.restore();
+        },
+        connectionColorModifier: (hue, sat, light, alpha) => ({
+          hue: (hue + 15) % 360,
+          sat: Math.min(100, sat + 40),
+          light: light + 20,
+          alpha: alpha * 1.2
+        })
       }
     };
     
-    let currentParticleTheme = 'cyber';
+    let currentAddonStyle = 'classic';
+    let frameCount = 0;
 
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const canvas = document.getElementById('snapshotCanvas');
@@ -367,13 +495,12 @@
     const previewVideo = document.getElementById('previewVideo');
     const previewMetadata = document.getElementById('previewMetadata');
 
-    // Tēmas maiņas funkcija
-    function setParticleTheme(themeName) {
-      currentParticleTheme = themeName;
+    // Stila maiņa - papildina CLASSIC stilu
+    function setAddonStyle(styleName) {
+      currentAddonStyle = styleName;
       
-      // Atjaunot daļiņu krāsas ar jauno tēmu
+      // Atjaunot daļiņu vizuālos efektus
       if (initialParticles.length > 0) {
-        updateParticleColors();
         if (animRequest) {
           stopAnimation();
           particles = cloneParticles();
@@ -382,40 +509,13 @@
       }
     }
     
-    function updateParticleColors() {
-      const theme = PARTICLE_THEMES[currentParticleTheme];
-      const seedBase = (account || '') + String(ethBalance) + String(txCount);
-      
-      particles.forEach((p, idx) => {
-        const balanceFactor = p.token.isNFT ? 1 : Math.min(p.token.balance || 0, 20) / 20;
-        
-        let hue;
-        if (theme.hueRange[1] - theme.hueRange[0] >= 360) {
-          // Rainbow theme - pilns spektrs
-          hue = (idx * 15 + frameCount * 0.5) % 360;
-        } else {
-          const hueVariation = hashStringToInt((p.token.address || '') + seedBase + idx, theme.hueRange[1] - theme.hueRange[0]);
-          hue = theme.hueRange[0] + hueVariation;
-        }
-        
-        const sat = theme.saturationRange[0] + (theme.saturationRange[1] - theme.saturationRange[0]) * balanceFactor;
-        const light = theme.lightnessRange[0] + (theme.lightnessRange[1] - theme.lightnessRange[0]) * balanceFactor;
-        
-        p.hue = hue;
-        p.saturation = sat;
-        p.lightness = light;
-      });
-    }
-    
-    let frameCount = 0;
-    
     // Theme button event listeners
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const theme = btn.getAttribute('data-theme');
-        setParticleTheme(theme);
+        const style = btn.getAttribute('data-theme');
+        setAddonStyle(style);
       });
     });
 
@@ -696,7 +796,7 @@
             { trait_type: "Token Count", value: tokens.length.toString() },
             { trait_type: "Transaction Count", value: txCount.toString() },
             { trait_type: "Platform", value: "Manifold" },
-            { trait_type: "Theme", value: PARTICLE_THEMES[currentParticleTheme].name },
+            { trait_type: "Visual Style", value: ADDON_STYLES[currentAddonStyle].name },
             { trait_type: "Generated At", value: new Date().toISOString() }
           ]
         };
@@ -742,35 +842,18 @@
       initialParticles = [];
       const particleCount = Math.min(150, 50 + (tokens.length || 0) * 15);
       const seedBase = (account || '') + String(ethBalance) + String(txCount);
-      const theme = PARTICLE_THEMES[currentParticleTheme];
       
       for (let i = 0; i < particleCount; i++) {
         const t = tokens.length ? tokens[i % tokens.length] : { balance: 1, address: String(i), symbol: 'T' };
         const balanceFactor = t.isNFT ? 1 : Math.min(t.balance || 0, 20) / 20;
-        
-        let hue;
-        if (theme.hueRange[1] - theme.hueRange[0] >= 360) {
-          hue = (i * 15) % 360;
-        } else {
-          const hueVariation = hashStringToInt((t.address || '') + seedBase + i, theme.hueRange[1] - theme.hueRange[0]);
-          hue = theme.hueRange[0] + hueVariation;
-        }
-        
+        let hue = hashStringToInt((t.address || '') + seedBase + i) % 360;
         const ethFactor = Math.min(ethBalance / 10, 1);
-        hue = (hue + ethFactor * 60) % 360;
+        hue = (hue + ethFactor * 100) % 360;
         const speed = 0.005 + 0.01 * (hashStringToInt((t.symbol || t.address) + seedBase + i, 10) / 10);
         const r = t.isNFT ? 10 : 2 + 6 * balanceFactor;
         const angle = seededRandomFloat(seedBase + i + 'angle') * 2 * Math.PI;
         const radius = 50 + seededRandomFloat(seedBase + i + 'radius') * 400;
-        
-        const sat = theme.saturationRange[0] + (theme.saturationRange[1] - theme.saturationRange[0]) * balanceFactor;
-        const light = theme.lightnessRange[0] + (theme.lightnessRange[1] - theme.lightnessRange[0]) * balanceFactor;
-        
-        initialParticles.push({ 
-          angle, radius, r, hue, speed, token: t,
-          saturation: sat,
-          lightness: light
-        });
+        initialParticles.push({ angle, radius, r, hue, speed, token: t, balanceFactor });
       }
     }
     
@@ -778,20 +861,20 @@
 
     function drawFrame(frame, showTokensFrame) {
       frameCount = frame;
-      const theme = PARTICLE_THEMES[currentParticleTheme];
+      const addon = ADDON_STYLES[currentAddonStyle];
       const dpr = window.devicePixelRatio || 1;
       const scale = isMobile ? 0.6 : 1;
       const W = canvas.width / (dpr * scale);
       const H = canvas.height / (dpr * scale);
       
-      // Oriģinālais fons - paliek melns!
+      // CLASSIC BACKGROUND - paliek melns
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, W, H);
       
       const cx0 = W / 2, cy0 = H / 2;
 
-      // Draw connections with theme-based colors
+      // CLASSIC CONNECTIONS - ar add-on krāsu modifikāciju
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i], p2 = particles[j];
@@ -803,13 +886,17 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
             const avgBalance = (Math.min(p1.token.balance, 20) + Math.min(p2.token.balance, 20)) / 40;
-            const alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
+            let alpha = 0.2 + 0.4 * avgBalance * (1 - dist / 200);
             ctx.lineWidth = 1.5 + 2 * avgBalance;
             const txFactor = Math.log(txCount + 1) / 10;
-            const hue = (p1.hue + p2.hue) / 2 + frame * 0.4 * txFactor;
-            const avgSat = (p1.saturation + p2.saturation) / 2;
-            const avgLight = (p1.lightness + p2.lightness) / 2;
-            ctx.strokeStyle = `hsla(${hue}, ${avgSat}%, ${avgLight}%, ${alpha})`;
+            let hue = (p1.hue + p2.hue) / 2 + frame * 0.4 * txFactor;
+            let sat = 100;
+            let light = 70;
+            
+            // Pielieto add-on krāsu modifikāciju
+            const modified = addon.connectionColorModifier(hue, sat, light, alpha);
+            
+            ctx.strokeStyle = `hsla(${modified.hue}, ${modified.sat}%, ${modified.light}%, ${modified.alpha})`;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -818,34 +905,40 @@
         }
       }
 
-      // Draw particles with theme-based colors
-      particles.forEach(p => {
+      // CLASSIC PARTICLES - ar add-on krāsu modifikāciju
+      particles.forEach((p, idx) => {
         p.angle += p.speed;
         const cx = cx0 + Math.cos(p.angle) * p.radius;
         const cy = cy0 + Math.sin(p.angle) * p.radius;
         
-        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.r * 2.5);
-        gradient.addColorStop(0, `hsla(${p.hue}, ${p.saturation}%, ${p.lightness + 10}%, 1)`);
-        gradient.addColorStop(0.5, `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, 0.9)`);
-        gradient.addColorStop(1, `hsla(${p.hue + 20}, ${p.saturation}%, ${p.lightness - 20}%, 0.5)`);
-        ctx.fillStyle = gradient;
+        let modifiedHue = p.hue;
+        let modifiedSat = 100;
+        let modifiedLight = 70;
         
-        if (theme.particleGlow) {
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, 0.8)`;
-        }
+        // Pielieto add-on krāsu modifikāciju
+        const modified = addon.particleColorModifier(p.hue, 100, 70, idx, p.balanceFactor);
+        
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.r * 2.5);
+        gradient.addColorStop(0, `hsla(${modified.hue}, ${modified.sat}%, ${modified.light + 10}%, 1)`);
+        gradient.addColorStop(0.5, `hsla(${modified.hue}, ${modified.sat}%, ${modified.light}%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${modified.hue + 20}, ${modified.sat}%, ${modified.light - 20}%, 0.5)`);
+        ctx.fillStyle = gradient;
         
         ctx.beginPath();
         ctx.arc(cx, cy, p.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
       });
 
-      // Info text - paliek oriģināls
+      // ADD-ON EXTRA EFFECTS
+      addon.drawExtraEffects(ctx, W, H, frame, particles, cx0, cy0);
+
+      // CLASSIC INFO TEXT
       if (showTokensFrame && showInfo) {
         ctx.fillStyle = '#0ff';
         ctx.font = '22px Inter';
         ctx.fillText(`SepoliaETH: ${ethBalance.toFixed(4)}`, 10, 80);
+        ctx.font = '16px Inter';
+        ctx.fillText(`Style: ${addon.name}`, 10, 115);
       }
     }
 
@@ -863,10 +956,7 @@
         { name: 'ETH balance', func: async () => { ethBalance = Number(ethers.formatEther(await provider.getBalance(account))) || 0; }},
         { name: 'Transaction count', func: async () => { txCount = Number(await provider.getTransactionCount(account)) || 0; }},
         { name: 'ERC-20 tokens', func: async () => { tokens = await getTokens(); }},
-        { name: 'NFTs', func: async () => { 
-            const nfts = await getAllNFTs();
-            tokens = [...tokens, ...nfts];
-          }},
+        { name: 'NFTs', func: async () => { tokens = [...tokens, ...await getAllNFTs()]; }},
         { name: 'Visualization', func: async () => { await initParticlesOnce(); particles = cloneParticles(); }}
       ];
 
